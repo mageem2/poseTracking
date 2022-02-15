@@ -8,6 +8,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
 import FormData from 'form-data';
+import ModelService from './ModelService'
 
 const TensorCamera = cameraWithTensors(Camera);
 
@@ -112,11 +113,19 @@ export default function App() {
       if(poses.length>0 && newArray.length<numFrames){
         //console.log("Collecting Data")
         newArray.push(poses[0].keypoints3D)
+        //console.log(poses[0].keypoints3D[0]['x'])
+
         setDataStatus("Collecting Data")
       }else if(newArray.length==numFrames){
         setCurrentPoseJson(newArray);
         setDataStatus("Name pose and push button to send data")
       }
+      // FIXME const predictionResponse = await this.modelService.classifyImage(poses[0].keypoints3D); IMPLEMENT THIS LINE
+      //ADD IN JSON PARSING, USE poses[0].keypoints3D
+      let arr_expanded = []
+      arr_expanded = ModelService.formatArray(poses)
+      
+
       tf.dispose([image]);
 
       // Render camera preview manually when autorender=false.

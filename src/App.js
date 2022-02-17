@@ -102,11 +102,12 @@ export default function App() {
       setFps(Math.floor(1000 / latency));
       setPoses(poses)
       
-      // FIXME const predictionResponse = await this.modelService.classifyImage(poses[0].keypoints3D); IMPLEMENT THIS LINE
+      // FIXME const predictionResponse = await this.modelService.classifyImage(poses); IMPLEMENT THIS LINE
       //ADD IN JSON PARSING, USE poses[0].keypoints3D
       if(poses.length>0){
-        const newArray = await modelService.formatArray(poses)
-        console.log(newArray)
+        //const newArray = await modelService.formatArray(poses)
+        c//onsole.log(newArray)
+        const predictionResponse = await modelService.classifyPose(poses)
       }
       
       tf.dispose([image]);

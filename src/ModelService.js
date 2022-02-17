@@ -27,10 +27,12 @@ export default class ModelService{
 
     async classifyPose(pose){ 
         //use model to predict
-        this.formatArray(pose)
+        let array = this.formatArray(pose)
+        //TODO:
+        //use model to predict 
         const zeros = tf.zeros([1, 224, 224, 3]);
         this.model.predict(zeros).print();
-        //return  
+        //return string of pose
     }
     
     async formatArray(pose){

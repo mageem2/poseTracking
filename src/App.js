@@ -8,7 +8,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
 import FormData from 'form-data';
-import ModelService from './ModelService'
+import ModelService from './ModelService.js'
 
 const TensorCamera = cameraWithTensors(Camera);
 
@@ -49,6 +49,7 @@ export default function App() {
   const [orientation, setOrientation] =
     useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
+  const modelService = new ModelService();
 
 
   useEffect(() => {
@@ -103,6 +104,10 @@ export default function App() {
       
       // FIXME const predictionResponse = await this.modelService.classifyImage(poses[0].keypoints3D); IMPLEMENT THIS LINE
       //ADD IN JSON PARSING, USE poses[0].keypoints3D
+      if(poses.length>0){
+        const newArray = await modelService.formatArray(poses)
+        console.log(newArray)
+      }
       
       tf.dispose([image]);
 

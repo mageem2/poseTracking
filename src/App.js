@@ -8,7 +8,6 @@ import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
-// import { ExpoWebGLRenderingContext } from 'expo-gl';
 
 // tslint:disable-next-line: variable-name
 const TensorCamera = cameraWithTensors(Camera);
@@ -45,7 +44,6 @@ export default function App() {
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);
   const [poses, setPoses] = useState(null);
-  const [fps, setFps] = useState(0);
   const [orientation, setOrientation] =
     useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
@@ -77,6 +75,20 @@ export default function App() {
           runtime: 'tfjs'
         }
       );
+
+      //Load Pose Classification Model
+      //TODO://model url prop/param
+
+      const MODEL_URL = '';
+
+      try {
+        const model = await loadLayersModel(MODEL_URL);
+
+      } catch(error) {
+
+      }
+
+
       setDetector(detector);
 
       // Ready!
@@ -95,10 +107,7 @@ export default function App() {
       // Get the tensor and run pose detection.
       const image = images.next().value;
       const estimationConfig = {flipHorizontal: true};
-      const timestamp = performance.now();
       const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
-      const latency = performance.now() - timestamp;
-      setFps(Math.floor(1000 / latency));
       setPoses(poses);
       tf.dispose([image]);
 
@@ -180,15 +189,6 @@ export default function App() {
     } else {
       return <View></View>;
     }
-  };
-
-
-  const renderFps = () => {
-    return (
-      <View style={styles.fpsContainer}>
-        <Text>FPS: {fps}</Text>
-      </View>
-    );
   };
 
   const isPortrait = () => {
@@ -279,7 +279,6 @@ export default function App() {
           onPress={cameraTypeHandler}
           title="Switch"/>
         {renderPose()}
-        {renderFps()}
       </View>
     );
   }

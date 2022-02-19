@@ -99,8 +99,8 @@ export default function PoseClassifier() {
       } 
       catch {
         try {
-          const modelJson = require('../src/assets/model.json');
-          const modelWeights = require('../src/assets/group1-shard1of1.bin');
+          const modelJson = await require('./assets/model.json');
+          const modelWeights = await require('./assets/group1-shard1of1.bin');
           model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
           setClassificationModel(model);
         } catch {

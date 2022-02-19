@@ -46,8 +46,8 @@ export default function PoseClassifier() {
   const [orientation, setOrientation] =
     useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  const [classificationModel, setClassificationModel] = useState(null);
-  const [classifiedPoses, setClassifiedPoses] = useState(null);
+  // const [classificationModel, setClassificationModel] = useState(null);
+  // const [classifiedPoses, setClassifiedPoses] = useState(null);
 
 
   useEffect(() => {
@@ -87,26 +87,26 @@ export default function PoseClassifier() {
       // - Serving from your own server can make it so the app doesn't need to have a full update
       //   to add exercises and/or poses to the library
       // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
-      const MODEL_URL = '';
+      // const MODEL_URL = '';
 
-      //Try server-based model loading
-      try {
-        const model = await tf.loadGraphModel(MODEL_URL);
-        setClassificationModel(model);
+      // //Try server-based model loading
+      // try {
+      //   const model = await tf.loadGraphModel(MODEL_URL);
+      //   setClassificationModel(model);
 
-      //If server-based doesn't work, then load the statically bundled model
-      //from within the source code
-      } 
-      catch {
-        try {
-          const modelJson = await require('./assets/model.json');
-          const modelWeights = await require('./assets/group1-shard1of1.bin');
-          model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
-          setClassificationModel(model);
-        } catch {
-            console.log("Error in both web-based and compile-time model loading");
-        }
-      }
+      // //If server-based doesn't work, then load the statically bundled model
+      // //from within the source code
+      // } 
+      // catch {
+      //   try {
+      //     const modelJson = await require('./assets/model.json');
+      //     const modelWeights = await require('./assets/group1-shard1of1.bin');
+      //     model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
+      //     setClassificationModel(model);
+      //   } catch {
+      //       console.log("Error in both web-based and compile-time model loading");
+      //   }
+      // }
 
       setDetector(detector);
 
@@ -117,23 +117,21 @@ export default function PoseClassifier() {
     prepare();
   }, []);
 
-const formatArray = async (pose) => {
-  let arr_expanded = []
-  if (pose.length > 0) {
-      //define a new array
-      for (let i = 0; i < 33; i++) {
-          //array.push??? x3 (x,y,z)
-          arr_expanded.push(pose[0].keypoints3D[i]['x'])
-          arr_expanded.push(pose[0].keypoints3D[i]['y'])
-          arr_expanded.push(pose[0].keypoints3D[i]['z'])
-          // console.log(poses[0].keypoints3D[i]['name'])
-          // console.log(poses[0].keypoints3D[i]['x'])
-      }
-      //console.log(arr_expanded.length)
-      }
-
-  return arr_expanded
-}
+// const formatArray = async (pose) => {
+//   let arr_expanded = []
+//   if (pose.length > 0) {
+//     //define a new array
+//     for (let i = 0; i < 33; i++) {
+//         //array.push??? x3 (x,y,z)
+//         arr_expanded.push(pose[0].keypoints3D[i]['x'])
+//         arr_expanded.push(pose[0].keypoints3D[i]['y'])
+//         arr_expanded.push(pose[0].keypoints3D[i]['z'])
+//         // console.log(poses[0].keypoints3D[i]['name'])
+//         // console.log(poses[0].keypoints3D[i]['x'])
+//     }
+//   }
+//   return arr_expanded
+// }
 
   const handleCameraStream = async (
     images,
@@ -150,9 +148,9 @@ const formatArray = async (pose) => {
       //Pose Classification
       //TODO:// refactor into file
       //TODO:// prop for confidence threshold
-      const keypoints = formatArray(pose);
-      const classification = await classificationModel.predict(keypoints); 
-      setClassifiedPoses(classification);
+      // const keypoints = formatArray(poses);
+      // const classification = await classificationModel.predict(keypoints); 
+      // setClassifiedPoses(classification);
       
       tf.dispose([image]);
 
@@ -324,7 +322,7 @@ const formatArray = async (pose) => {
           onPress={cameraTypeHandler}
           title="Switch"/>
         {renderPose()}
-        <Text>{classifiedPoses}</Text>
+        {/* <Text>{classifiedPoses}</Text> */}
       </View>
     );
   }

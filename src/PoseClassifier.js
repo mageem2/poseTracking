@@ -36,15 +36,14 @@ const OUTPUT_TENSOR_WIDTH = 180;
 const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // Whether to auto-render TensorCamera preview.
-const AUTO_RENDER = false;
+const AUTO_RENDER = true;
 
 export default function PoseClassifier() {
   const cameraRef = useRef(null);
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);
   const [poses, setPoses] = useState(null);
-  const [orientation, setOrientation] =
-    useState(ScreenOrientation.Orientation);
+  const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
   // const [classificationModel, setClassificationModel] = useState(null);
   // const [classifiedPoses, setClassifiedPoses] = useState(null);

@@ -106,7 +106,7 @@ export default function App() {
       //ADD IN JSON PARSING, USE poses[0].keypoints3D
       if(poses.length>0){
         //const newArray = await modelService.formatArray(poses)
-        c//onsole.log(newArray)
+        //console.log(newArray)
         const predictionResponse = await modelService.classifyPose(poses)
       }
       
@@ -285,11 +285,14 @@ export default function App() {
           rotation={getTextureRotationAngleInDegrees()}
           onReady={handleCameraStream}
         />
-        <Button
+        <TouchableOpacity
+          style={styles.switch}
           onPress={cameraTypeHandler}
-          title="Switch"/>
+        ><Text style={{color:"white"}}>Switch</Text>
+        </TouchableOpacity>
         {renderPose()}
         {renderFps()}
+        <Text style={styles.poseName}>PoseName</Text>
       </View>
     );
   }
@@ -337,10 +340,28 @@ const styles = StyleSheet.create({
     padding: 8,
     zIndex: 20,
   },
+  switch: {
+    position: 'absolute',
+    bottom: 20,
+    left: 10,
+    width: 80,
+    backgroundColor: '#f194ff',
+    alignItems: 'center',
+    borderRadius: 2,
+    padding: 8,
+    zIndex: 20,
+  },
   dataStatus: {
     fontSize: 30,
   }, 
   input: {
     height: 30,
+  },
+  poseName: {
+    position: 'relative',
+    backgroundColor: 'grey',
+    alignItems: 'center',
+    color: 'white',
+    zIndex: 20,
   }
 });

@@ -7,7 +7,7 @@ export default function MainMenu() {
     const [atMenu, setAtMenu] = setState(true);
     const [targetPose, setTargetPose] = setState('');
     
-    const handlePoseButtonPress = (poseFromButtom) => {
+    const handlePoseButtonPress = (poseFromButton) => {
         setTargetPose(poseFromButton);
     }
     
@@ -16,25 +16,25 @@ export default function MainMenu() {
             <View>
                 <TouchableOpacity
                     style={styles.poseButton}
-                    onPress={('pose_1') => {handlePoseButtonPress}}
+                    onPress={() => {handlePoseButtonPress('pose_1')}}
                 >
                     <Text>Pose 1</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.poseButton}
-                    onPress={('pose_2') =>{handlePoseButtonPress}}
+                    onPress={() =>{handlePoseButtonPress('pose_2')}}
                 >
                     <Text>Pose 2</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.poseButton}
-                    onPress={('pose_3') => {handlePoseButtonPress}}
+                    onPress={() => {handlePoseButtonPress('pose_3')}}
                 >
                     <Text>Pose 3</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.poseButton}
-                    onPress={('pose_4') => {handlePoseButtonPress}}
+                    onPress={() => {handlePoseButtonPress('pose_4')}}
                 >
                     <Text>Pose 4</Text>
                 </TouchableOpacity>

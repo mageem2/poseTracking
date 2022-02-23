@@ -19,6 +19,11 @@ export default function PoseExample() {
     const handleLoading = (isLoadingFromClassifier) => {
         setIsLoading(isLoadingFromClassifier);
     }
+
+    // TODO 
+    // const handleCameraFlip = () => {
+
+    // }
     
     //renders the status box based on the above states
     const renderStatusBox = () => {

@@ -36,17 +36,27 @@ const OUTPUT_TENSOR_WIDTH = 180;
 const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // Whether to auto-render TensorCamera preview.
+// AUTO_RENDER == true
+//    - this will make it so that the camera preview
+//      is dynamically rendered.  This is recommended
+//      for almost all applications.
+//    - This means the camera preview will render
+//      regardless of the awaits inside the loop
 const AUTO_RENDER = true;
 
 export default function PoseClassifier() {
+
+  //State variables to be used throughout the PoseClassifier Component
+  // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
   const cameraRef = useRef(null);
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);
   const [poses, setPoses] = useState(null);
+  const [fps, setFps] = useState(0);
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  // const [classificationModel, setClassificationModel] = useState(null);
-  // const [classifiedPoses, setClassifiedPoses] = useState(null);
+  const [classificationModel, setClassificationModel] = useState(null);
+  const [classifiedPoses, setClassifiedPoses] = useState(null);
 
 
   useEffect(() => {
@@ -88,24 +98,24 @@ export default function PoseClassifier() {
       // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
       // const MODEL_URL = '';
 
-      // //Try server-based model loading
-      // try {
-      //   const model = await tf.loadGraphModel(MODEL_URL);
-      //   setClassificationModel(model);
+      //Try server-based model loading
+      try {
+        const model = await tf.loadGraphModel(MODEL_URL);
+        setClassificationModel(model);
 
-      // //If server-based doesn't work, then load the statically bundled model
-      // //from within the source code
-      // } 
-      // catch {
-      //   try {
-      //     const modelJson = await require('./assets/model.json');
-      //     const modelWeights = await require('./assets/group1-shard1of1.bin');
-      //     model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
-      //     setClassificationModel(model);
-      //   } catch {
-      //       console.log("Error in both web-based and compile-time model loading");
-      //   }
-      // }
+      //If server-based doesn't work, then load the statically bundled model
+      //from within the source code
+      } 
+      catch {
+        try {
+          const modelJson = await require('./assets/model.json');
+          const modelWeights = await require('./assets/group1-shard1of1.bin');
+          model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
+          setClassificationModel(model);
+        } catch {
+            console.log("Error in both web-based and compile-time model loading");
+        }
+      }
 
       setDetector(detector);
 
@@ -116,21 +126,21 @@ export default function PoseClassifier() {
     prepare();
   }, []);
 
-// const formatArray = async (pose) => {
-//   let arr_expanded = []
-//   if (pose.length > 0) {
-//     //define a new array
-//     for (let i = 0; i < 33; i++) {
-//         //array.push??? x3 (x,y,z)
-//         arr_expanded.push(pose[0].keypoints3D[i]['x'])
-//         arr_expanded.push(pose[0].keypoints3D[i]['y'])
-//         arr_expanded.push(pose[0].keypoints3D[i]['z'])
-//         // console.log(poses[0].keypoints3D[i]['name'])
-//         // console.log(poses[0].keypoints3D[i]['x'])
-//     }
-//   }
-//   return arr_expanded
-// }
+const formatArray = async (pose) => {
+  let arr_expanded = []
+  if (pose.length > 0) {
+    //define a new array
+    for (let i = 0; i < 33; i++) {
+        //array.push??? x3 (x,y,z)
+        arr_expanded.push(pose[0].keypoints3D[i]['x'])
+        arr_expanded.push(pose[0].keypoints3D[i]['y'])
+        arr_expanded.push(pose[0].keypoints3D[i]['z'])
+        // console.log(poses[0].keypoints3D[i]['name'])
+        // console.log(poses[0].keypoints3D[i]['x'])
+    }
+  }
+  return arr_expanded
+}
 
   const handleCameraStream = async (
     images,
@@ -141,15 +151,18 @@ export default function PoseClassifier() {
       // Get the tensor and run pose detection.
       const image = images.next().value;
       const estimationConfig = {flipHorizontal: true};
+      const timestamp = performance.now();
       const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
+      const latency = performance.now() - timestamp;
+      setFps(Math.floor(1000 / latency));
       setPoses(poses);
 
-      //Pose Classification
-      //TODO:// refactor into file
-      //TODO:// prop for confidence threshold
-      // const keypoints = formatArray(poses);
-      // const classification = await classificationModel.predict(keypoints); 
-      // setClassifiedPoses(classification);
+      // Pose Classification
+      // TODO:// refactor into file
+      // TODO:// prop for confidence threshold
+      const keypoints = formatArray(poses);
+      const classification = await classificationModel.predict(keypoints); 
+      setClassifiedPoses(classification);
       
       tf.dispose([image]);
 
@@ -280,6 +293,7 @@ export default function PoseClassifier() {
     }
   };
 
+  //TODO prop
   if (!tfReady) {
     return (
       <View style={styles.loadingMsg}>
@@ -317,11 +331,12 @@ export default function PoseClassifier() {
           rotation={getTextureRotationAngleInDegrees()}
           onReady={handleCameraStream}
         />
+        {/* TODO prop */}
         <Button
           onPress={cameraTypeHandler}
           title="Switch"/>
         {renderPose()}
-        {/* <Text>{classifiedPoses}</Text> */}
+        <Text>{classifiedPoses}</Text>
       </View>
     );
   }

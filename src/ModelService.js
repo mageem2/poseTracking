@@ -5,7 +5,36 @@ import * as tf from '@tensorflow/tfjs';
 //     const model = await tf.loadGraphModel(/*modelURL*/);
 
 // }
-const loadClassificationModel = async () =>
+const loadClassificationModel = async (modelJson, modelWeights, modelUrl) => {
+    //Load Pose Classification Model
+    //TODO://model url prop/param
+    //TODO Classification_Prop
+    //TODO:// adding in model label parsing for server-based and compile-time
+    //TODO:// change into separate file
+
+    //For information on serving a model from your own server
+    // - Serving from your own server can make it so the app doesn't need to have a full update
+    //   to add exercises and/or poses to the library
+    // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
+    // const MODEL_URL = '';
+
+    //Try server-based model loading
+    try {
+        const model = await tf.loadLayersModel(modelUrl);
+        setClassificationModel(model);
+
+    //If server-based doesn't work, then load the statically bundled model
+    //from within the source code
+    } 
+    catch {
+        try {
+            model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
+            setClassificationModel(model);
+        } catch {
+            console.log("Error in both web-based and compile-time model loading");
+        }
+    }
+}
 
 const classifyPose = async (classificationModel, pose) => { 
     //format keypoints from pose estimation

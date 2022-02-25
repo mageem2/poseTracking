@@ -37,7 +37,7 @@ const OUTPUT_TENSOR_WIDTH = 180;
 const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // Whether to auto-render TensorCamera preview.
-const AUTO_RENDER = false;
+const AUTO_RENDER = true;
 
 export default function App() {
   const cameraRef = useRef(null);
@@ -50,6 +50,7 @@ export default function App() {
     useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
   const modelService = new ModelService();
+  //const [modelService, setModelService] = useState(null);
 
 
   useEffect(() => {
@@ -68,6 +69,9 @@ export default function App() {
 
       // Wait for tfjs to initialize the backend.
       await tf.ready();
+
+      //load model
+      await modelService.create()
 
       // Load Blazepose model.
       const detector = await poseDetection.createDetector(
@@ -102,12 +106,9 @@ export default function App() {
       setFps(Math.floor(1000 / latency));
       setPoses(poses)
       
-      // FIXME const predictionResponse = await this.modelService.classifyImage(poses); IMPLEMENT THIS LINE
-      //ADD IN JSON PARSING, USE poses[0].keypoints3D
       if(poses.length>0){
-        //const newArray = await modelService.formatArray(poses)
-        c//onsole.log(newArray)
-        const predictionResponse = await modelService.classifyPose(poses)
+        //call classify pose to get prediction
+        //const predictionResponse = await modelService.classifyPose(poses)
       }
       
       tf.dispose([image]);

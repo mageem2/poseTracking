@@ -58,7 +58,6 @@ export default function PoseClassifier() {
   const [classificationModel, setClassificationModel] = useState(null);
   const [classifiedPoses, setClassifiedPoses] = useState(null);
 
-
   useEffect(() => {
     async function prepare() {
       // Set initial orientation.

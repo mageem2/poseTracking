@@ -78,6 +78,38 @@ export default function App() {
         }
       );
       setDetector(detector);
+
+      //Load Pose Classification Model
+      //TODO://model url prop/param
+      //TODO Classification_Prop
+      //TODO:// adding in model label parsing for server-based and compile-time
+      //TODO:// change into separate file
+
+      //For information on serving a model from your own server
+      // - Serving from your own server can make it so the app doesn't need to have a full update
+      //   to add exercises and/or poses to the library
+      // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
+      // const MODEL_URL = '';
+
+      //Try server-based model loading
+      try {
+        const model = await tf.loadGraphModel(MODEL_URL);
+        setClassificationModel(model);
+
+      //If server-based doesn't work, then load the statically bundled model
+      //from within the source code
+      } 
+      catch {
+        try {
+          const modelJson = await require('./assets/model.json');
+          const modelWeights = await require('./assets/group1-shard1of1.bin');
+          model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
+          setClassificationModel(model);
+        } catch {
+            console.log("Error in both web-based and compile-time model loading");
+        }
+      }
+
       // Ready!
       setTfReady(true);
     }

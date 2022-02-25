@@ -49,7 +49,6 @@ export default function App() {
   const [orientation, setOrientation] =
     useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  const modelService = new ModelService();
 
 
   useEffect(() => {

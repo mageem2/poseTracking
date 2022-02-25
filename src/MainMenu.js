@@ -16,7 +16,7 @@ export default function MainMenu() {
             <View>
                 <TouchableOpacity
                     style={styles.poseButton}
-                    onPress={() => {handlePoseButtonPress('pose_1')}}
+                    onPress={() => {handlePoseButtonPress('t-pose')}}
                 >
                     <Text>Pose 1</Text>
                 </TouchableOpacity>
@@ -46,7 +46,7 @@ export default function MainMenu() {
             //props or inputs
                 targetPoseInput={targetPose}
                 style={styles.poseScreen}
-                backButton
+            //    backButton
             ></PoseExample>
         );
     }

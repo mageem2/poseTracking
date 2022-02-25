@@ -7,9 +7,7 @@ export default function PoseExample() {
     const [atMenu, setAtMenu] = setState(true);
     const [targetPose, setTargetPose] = setState('');
     const [classifiedPose, setClassifiedPose] = setState(['',0.0]);
-    
     const [cameraState, setCameraState] = setState('front');
-    
     const [isLoading, setIsLoading] = setState(true);
     
     const handleClassification = (classificationArray) => {
@@ -25,6 +23,23 @@ export default function PoseExample() {
 
     // }
     
+    const [classifiedPose, setClassifiedPose] = setState(['',0.0]);
+    const [cameraState, setCameraState] = setState('front');
+    const [isLoading, setIsLoading] = setState(true);
+    
+    const handleClassification = (classificationArray) => {
+        setClassifiedPose(classificationArray);
+    }
+    
+    const handleLoading = (isLoadingFromClassifier) => {
+        setIsLoading(isLoadingFromClassifier);
+    }
+
+    // TODO 
+    // const handleCameraFlip = () => {
+
+    // }
+
     //renders the status box based on the above states
     const renderStatusBox = () => {
         //Component Rendering
@@ -49,7 +64,7 @@ export default function PoseExample() {
             if(isDetecting || classifiedPose[1] < 0.5) {
                 return(
                     <View style={styles.OrangeBox}>
-                        <Text>Loading Pose Classification...</Text>
+                        <Text>Detecting Pose...</Text>
                     </View>
                 );
                 

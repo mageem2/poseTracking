@@ -43,10 +43,8 @@ export default function MainMenu() {
     } else {
         return (
             <PoseExample
-            //props or inputs
                 targetPoseInput={targetPose}
                 style={styles.poseScreen}
-            //    backButton
             ></PoseExample>
         );
     }

@@ -17,29 +17,7 @@ export default function PoseExample() {
     const handleLoading = (isLoadingFromClassifier) => {
         setIsLoading(isLoadingFromClassifier);
     }
-
-    // TODO 
-    // const handleCameraFlip = () => {
-
-    // }
     
-    const [classifiedPose, setClassifiedPose] = setState(['',0.0]);
-    const [cameraState, setCameraState] = setState('front');
-    const [isLoading, setIsLoading] = setState(true);
-    
-    const handleClassification = (classificationArray) => {
-        setClassifiedPose(classificationArray);
-    }
-    
-    const handleLoading = (isLoadingFromClassifier) => {
-        setIsLoading(isLoadingFromClassifier);
-    }
-
-    // TODO 
-    // const handleCameraFlip = () => {
-
-    // }
-
     //renders the status box based on the above states
     const renderStatusBox = () => {
         //Component Rendering

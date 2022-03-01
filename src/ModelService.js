@@ -9,7 +9,7 @@ import { fetch ,asyncStorageIO,bundleResourceIO,decodeJpeg} from '@tensorflow/tf
 
 export default class ModelService{
 
-    constructor(model){
+    constructor(){
         //load the model
         //this.modelUrl = modelUrl;
 
@@ -19,9 +19,8 @@ export default class ModelService{
         //const model_classes = require("../assets/classes.json")
         //this.model = await tf.loadGraphModel(bundleResourceIO(modelUrl,modelWeights));
         //const [model, setModel] = useState(null);
-        this.state={
-            model: null
-        };
+        this.model=null;
+        this.model_classes=null;
         this.create.bind(this)
         this.classifyPose.bind(this)
         
@@ -32,35 +31,47 @@ export default class ModelService{
         console.log("creating")
         const modelJSON = require('../assets/model.json');
         const modelWeights = require('../assets/group1-shard1of1.bin');
-        this.state.model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights))
-        console.log(this.state.model)
+        const model_classes = require("../assets/classes.json")
+        this.model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights))
+        this.model_classes = model_classes;
+        console.log(this.model)
         console.log("model loaded")
+        return this.model
+
         //const ms = new ModelService(model)
         //return ms;
-    }
-
-    test(){
-        console.log("test passed")
-    }
-
-    async loadModel(){
-        //await tf.ready();
-        
     }
 
     async classifyPose(pose){ 
         //use model to predict
         let array = this.formatArray(pose)
         array = tf.tensor(array)
-        //TODO:
-        //use model to predict 
-        //const zeros = tf.zero);
-        console.log("model:", this.state.model)
-        if(this.state.model){
-            let prediction = this.state.model.predict(array);
-            console.log("Prediction:", prediction)
+        //console.log("model:", this.model)
+        if(this.model){
+            let predictionTensor = this.model.predict(array);
+            //console.log("Prediction:", predictionTensor)
+            //console.log("topk", prediction.topk)
+            const poseName = this.decodePredictions(predictionTensor,this.model_classes);
+            console.log(poseName)
+            return predictionTensor
         }
-        //return string of pose
+    }
+
+    decodePredictions(prediction, classes,topK=4){
+        const {values, indices} = prediction.topk(topK);
+        const topKValues = values.dataSync();
+        const topKIndices = indices.dataSync();
+      
+        const className = [];
+        const probability = [];
+        for (let i = 0; i < topKIndices.length; i++) {
+            className.push(classes[topKIndices[i]])
+            probability.push(topKValues[i])
+        }
+        const arg = this.indexOfMax(probability)
+        //console.log("classes", className)
+        //console.log("prob", probability)
+        return className[arg%3];
     }
     
     transpose(arr){
@@ -72,6 +83,24 @@ export default class ModelService{
            };
         }
      }
+
+    indexOfMax(arr) {
+        if (arr.length === 0) {
+            return -1;
+        }
+    
+        var max = arr[0];
+        var maxIndex = 0;
+    
+        for (var i = 1; i < arr.length; i++) {
+            if (arr[i] > max) {
+                maxIndex = i;
+                max = arr[i];
+            }
+        }
+    
+        return maxIndex;
+    }
     
     formatArray(pose){
         let arr_expanded = new Array([])
@@ -91,3 +120,4 @@ export default class ModelService{
         return arr_expanded
     }
 }
+

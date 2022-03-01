@@ -67,6 +67,7 @@ export default function PoseClassifier(
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
   const [classificationModel, setClassificationModel] = useState(null);
   const [classifiedPoses, setClassifiedPoses] = useState(null);
+  const [modelClasses, setModelClasses] = useState(null);
 
   useEffect(() => {
     async function prepare() {
@@ -111,6 +112,8 @@ export default function PoseClassifier(
       try {
 		    const modelUrl = props.modelUrl;
         const model = await tf.loadLayersModel(modelUrl);
+        const model_classes = require("./assets/classes.json")
+        setModelClasses(model_classes)
         setClassificationModel(model);
 
       //If server-based doesn't work, then load the statically bundled model
@@ -119,6 +122,8 @@ export default function PoseClassifier(
       catch {
         const modelJSON = require('./assets/model.json');
         const modelWeights = require('./assets/group1-shard1of1.bin');
+        const model_classes = require("./assets/classes.json")
+        setModelClasses(model_classes)
         const model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights))
         setClassificationModel(model);
       }
@@ -131,16 +136,6 @@ export default function PoseClassifier(
 
     prepare();
   }, []);
-
-  const transpose = (arr) => {
-    for (let i = 0; i < arr.length; i++) {
-      for (let j = 0; j < i; j++) {
-        const tmp = arr[i][j];
-        arr[i][j] = arr[j][i];
-        arr[j][i] = tmp;
-      };
-    }
-  }
 
   const formatArray = (pose) => {
     let arr_expanded = new Array([])
@@ -159,6 +154,38 @@ export default function PoseClassifier(
     return arr_expanded
     //return transposed_array
   }
+
+  const decodePredictions = (prediction, classes,topK=4) => {
+    const {values, indices} = prediction.topk(topK);
+    const topKValues = values.dataSync();
+    const topKIndices = indices.dataSync();
+  
+    const className = [];
+    const probability = [];
+    for (let i = 0; i < topKIndices.length; i++) {
+        className.push(classes[topKIndices[i]])
+        probability.push(topKValues[i])
+    }
+    const arg = this.indexOfMax(probability)
+    //console.log("classes", className)
+    //console.log("prob", probability)
+    return className[arg%3];
+  }
+
+  const indexOfMax = (arr) => {
+    if (arr.length === 0) {
+        return -1;
+    }
+    var max = arr[0];
+    var maxIndex = 0;
+    for (var i = 1; i < arr.length; i++) {
+        if (arr[i] > max) {
+            maxIndex = i;
+            max = arr[i];
+        }
+    }
+    return maxIndex;
+}
 
   const handleCameraStream = async (
     images,
@@ -189,9 +216,12 @@ export default function PoseClassifier(
         // TODO:// prop for confidence threshold
         const keypoints = formatArray(poses);
         tensor_keypoints = tf.tensor(keypoints)
-        const classification = await classificationModel.predict(tensor_keypoints); 
-        setClassifiedPoses(classification);
-        console.log("Prediction:", classification)
+        if(classificationModel){
+          const classification_tensor = await classificationModel.predict(tensor_keypoints);
+          const poseName = this.decodePredictions(classification_tensor,modelClasses); 
+          //setClassifiedPoses(classification);
+          console.log("Prediction:", poseName)
+        }
       }
       
       tf.dispose([image]);

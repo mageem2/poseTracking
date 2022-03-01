@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button } from 'react-native';
-
+import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button,TextInput } from 'react-native';
 
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
@@ -8,9 +7,9 @@ import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
-// import { ExpoWebGLRenderingContext } from 'expo-gl';
+import FormData from 'form-data';
+import ModelService from './ModelService.js'
 
-// tslint:disable-next-line: variable-name
 const TensorCamera = cameraWithTensors(Camera);
 
 const IS_ANDROID = Platform.OS === 'android';
@@ -23,7 +22,7 @@ const IS_IOS = Platform.OS === 'ios';
 // devices.
 //
 // This might not cover all cases.
-const CAM_PREVIEW_WIDTH = Dimensions.get('window').width;
+const CAM_PREVIEW_WIDTH = Dimensions.get('window').width /1.25;
 const CAM_PREVIEW_HEIGHT = CAM_PREVIEW_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // The score threshold for pose detection results.
@@ -38,17 +37,21 @@ const OUTPUT_TENSOR_WIDTH = 180;
 const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // Whether to auto-render TensorCamera preview.
-const AUTO_RENDER = false;
+const AUTO_RENDER = true;
 
 export default function App() {
   const cameraRef = useRef(null);
+  const [currentPoseName, setCurrentPoseName] = useState('');
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);
+  //const [model, setModel] = useState(null);
   const [poses, setPoses] = useState(null);
   const [fps, setFps] = useState(0);
   const [orientation, setOrientation] =
     useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
+  const [modelService, setModelService] = useState(null);
+  const [poseName, setPoseName] = useState(null);
 
 
   useEffect(() => {
@@ -68,6 +71,11 @@ export default function App() {
       // Wait for tfjs to initialize the backend.
       await tf.ready();
 
+      //load model
+      const modelService = new ModelService();
+      setModelService(modelService)
+      const model = await modelService.create()
+
       // Load Blazepose model.
       const detector = await poseDetection.createDetector(
         poseDetection.SupportedModels.BlazePose,
@@ -78,7 +86,7 @@ export default function App() {
         }
       );
       setDetector(detector);
-
+      //setModel(model);
       // Ready!
       setTfReady(true);
     }
@@ -98,8 +106,17 @@ export default function App() {
       const timestamp = performance.now();
       const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
       const latency = performance.now() - timestamp;
+      const numFrames = 300;
       setFps(Math.floor(1000 / latency));
-      setPoses(poses);
+      setPoses(poses)
+      
+      if(poses.length>0){
+        //call classify pose to get prediction
+        const poseName = await modelService.classifyPose(poses)
+        setPoseName(poseName)
+        //console.log("Prediction response", predictionResponse)
+      }
+      
       tf.dispose([image]);
 
       // Render camera preview manually when autorender=false.
@@ -181,7 +198,7 @@ export default function App() {
       return <View></View>;
     }
   };
-
+ 
 
   const renderFps = () => {
     return (
@@ -275,11 +292,14 @@ export default function App() {
           rotation={getTextureRotationAngleInDegrees()}
           onReady={handleCameraStream}
         />
-        <Button
+        <TouchableOpacity
+          style={styles.switch}
           onPress={cameraTypeHandler}
-          title="Switch"/>
+        ><Text style={{color:"white"}}>Switch</Text>
+        </TouchableOpacity>
         {renderPose()}
         {renderFps()}
+        <Text style={styles.poseName}>PoseName {poseName}</Text>
       </View>
     );
   }
@@ -327,4 +347,28 @@ const styles = StyleSheet.create({
     padding: 8,
     zIndex: 20,
   },
+  switch: {
+    position: 'absolute',
+    bottom: 20,
+    left: 10,
+    width: 80,
+    backgroundColor: '#f194ff',
+    alignItems: 'center',
+    borderRadius: 2,
+    padding: 8,
+    zIndex: 20,
+  },
+  dataStatus: {
+    fontSize: 30,
+  }, 
+  input: {
+    height: 30,
+  },
+  poseName: {
+    position: 'relative',
+    backgroundColor: 'grey',
+    alignItems: 'center',
+    color: 'white',
+    zIndex: 20,
+  }
 });

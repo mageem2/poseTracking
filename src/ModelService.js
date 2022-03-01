@@ -53,7 +53,7 @@ export default class ModelService{
             //console.log("topk", prediction.topk)
             const poseName = this.decodePredictions(predictionTensor,this.model_classes);
             console.log(poseName)
-            return predictionTensor
+            return poseName
         }
     }
 

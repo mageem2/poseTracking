@@ -51,6 +51,7 @@ export default function App() {
     useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
   const [modelService, setModelService] = useState(null);
+  const [poseName, setPoseName] = useState(null);
 
 
   useEffect(() => {
@@ -111,7 +112,8 @@ export default function App() {
       
       if(poses.length>0){
         //call classify pose to get prediction
-        const predictionResponse = await modelService.classifyPose(poses)
+        const poseName = await modelService.classifyPose(poses)
+        setPoseName(poseName)
         //console.log("Prediction response", predictionResponse)
       }
       
@@ -297,7 +299,7 @@ export default function App() {
         </TouchableOpacity>
         {renderPose()}
         {renderFps()}
-        <Text style={styles.poseName}>PoseName</Text>
+        <Text style={styles.poseName}>PoseName {poseName}</Text>
       </View>
     );
   }

@@ -44,13 +44,13 @@ export default function App() {
   const [currentPoseName, setCurrentPoseName] = useState('');
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);
+  //const [model, setModel] = useState(null);
   const [poses, setPoses] = useState(null);
   const [fps, setFps] = useState(0);
   const [orientation, setOrientation] =
     useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  const modelService = new ModelService();
-  //const [modelService, setModelService] = useState(null);
+  const [modelService, setModelService] = useState(null);
 
 
   useEffect(() => {
@@ -71,7 +71,9 @@ export default function App() {
       await tf.ready();
 
       //load model
-      await modelService.create()
+      const modelService = new ModelService();
+      setModelService(modelService)
+      const model = await modelService.create()
 
       // Load Blazepose model.
       const detector = await poseDetection.createDetector(
@@ -83,6 +85,7 @@ export default function App() {
         }
       );
       setDetector(detector);
+      //setModel(model);
       // Ready!
       setTfReady(true);
     }
@@ -108,7 +111,8 @@ export default function App() {
       
       if(poses.length>0){
         //call classify pose to get prediction
-        //const predictionResponse = await modelService.classifyPose(poses)
+        const predictionResponse = await modelService.classifyPose(poses)
+        //console.log("Prediction response", predictionResponse)
       }
       
       tf.dispose([image]);

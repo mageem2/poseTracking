@@ -40,7 +40,7 @@ const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 // Whether to auto-render TensorCamera preview.
 const AUTO_RENDER = false;
 
-export default function App() {
+export default function CameraJ() {
   const cameraRef = useRef(null);
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);

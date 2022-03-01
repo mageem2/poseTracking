@@ -4,43 +4,55 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {Component} from 'react';
 import { inlineStyles } from 'react-native-svg';
+import {CameraJ} from './Camera';
 
 function HomeScreen({ navigation }) {
   return (
     <View style={styles.main}>
       <Text style={{fontSize: 30,}}>Choose a Pose</Text>
       <View style={styles.row}>
-      <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('Camera')} >
-        <Text style={styles.boxContent}>Tree pose</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>Tree pose</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('Camera')} >
-        <Text style={styles.boxContent}>T pose</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>T pose</Text>
+        </TouchableOpacity>
       </View>
+
       <View style={styles.row}>
-      <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('Camera')} >
-        <Text style={styles.boxContent}>Warrior pose</Text>
-      </TouchableOpacity>
-      
-      <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('Camera')} >
-        <Text style={styles.boxContent}>Pose 4 (NOT HERE YET)</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>Warrior pose</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>Pose 4 (NOT HERE YET)</Text>
+        </TouchableOpacity>
       </View>
 
+      <View style={styles.row}>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>Pose 5 (NOT HERE YET)</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>Pose 6 (NOT HERE YET)</Text>
+        </TouchableOpacity>
+      </View>
 
     </View>
   );
 }
 
-function Camera({ navigation }) {
-  return(
-    //Classification Component
-      <View style={styles.main}>
-        <Text>Camera will go here with the call of component</Text>
-      </View>
-  );
-}
+// function CamaraT({ navigation, props }) {
+//   return(
+//     //Camara component opens here
+//       <View style={styles.main}>
+//         {/* <Text>PlaceHolder</Text> */}
+//         <CameraJ/>
+//       </View>
+//   );
+// }
 
 
 const Stack = createNativeStackNavigator();
@@ -60,7 +72,8 @@ export default function App() {
         },
       }}>
         <Stack.Screen name="Home" component={HomeScreen} options={{title: 'Pose Tracker'}}/>
-        <Stack.Screen name="Camera" component={Camera} />
+        {/* <Stack.Screen name="CamaraT" component={CamaraT} /> */}
+        <Stack.Screen name="CameraS" getComponent={() => require('./Camera').default} options={{title: 'Camera Tracker'}}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

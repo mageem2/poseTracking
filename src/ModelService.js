@@ -31,7 +31,7 @@ const loadClassificationModel = async (modelJson, modelWeights, modelUrl) => {
             model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
             setClassificationModel(model);
         } catch {
-            console.log("Error in both web-based and compile-time model loading");
+            console.log("Error in both tensor-server-based and compile-time model loading");
         }
     }
 }

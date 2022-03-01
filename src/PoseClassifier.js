@@ -155,9 +155,9 @@ export default function PoseClassifier(
           // console.log(poses[0].keypoints3D[i]['x'])
       }
     }
-    const transposed_array = transpose(arr_expanded)
-
-    return transposed_array
+    //const transposed_array = transpose(arr_expanded)
+    return arr_expanded
+    //return transposed_array
   }
 
   const handleCameraStream = async (
@@ -188,7 +188,7 @@ export default function PoseClassifier(
         // TODO:// refactor into file
         // TODO:// prop for confidence threshold
         const keypoints = formatArray(poses);
-        tensor_keypoints = tf.tensor(array)
+        tensor_keypoints = tf.tensor(keypoints)
         const classification = await classificationModel.predict(tensor_keypoints); 
         setClassifiedPoses(classification);
         console.log("Prediction:", classification)

@@ -117,14 +117,10 @@ export default function PoseClassifier(
       //from within the source code
       } 
       catch {
-        try {
-          const modelJSON = require('./assets/model.json');
-          const modelWeights = require('./assets/group1-shard1of1.bin');
-          const model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights))
-          setClassificationModel(model);
-        } catch {
-            console.log("Error in both tensor-server-based and compile-time model loading");
-        }
+        const modelJSON = require('./assets/model.json');
+        const modelWeights = require('./assets/group1-shard1of1.bin');
+        const model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights))
+        setClassificationModel(model);
       }
 
       setDetector(detector);

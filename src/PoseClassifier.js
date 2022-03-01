@@ -45,16 +45,16 @@ const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 const AUTO_RENDER = true;
 
 export default function PoseClassifier(
-  props, 
-  { 
-    //Setting Default parameters for components
-    modelUrl='', 
-    showFps=false, 
-    renderKeypoints=false,
-    estimationModelType='full',
-    cameraState='front',
-    estimationThreshold='0.5'
-  } 
+  // props, 
+  // { 
+  //   //Setting Default parameters for components
+  //   modelUrl='', 
+  //   showFps=false, 
+  //   renderKeypoints=false,
+  //   estimationModelType='full',
+  //   cameraState='front',
+  //   estimationThreshold='0.5'
+  // } 
 ) {
   //State variables to be used throughout the PoseClassifier Component
   // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
@@ -112,8 +112,8 @@ export default function PoseClassifier(
       try {
 		    const modelUrl = props.modelUrl;
         const model = await tf.loadLayersModel(modelUrl);
-        const model_classes = require("./assets/classes.json")
-        setModelClasses(model_classes)
+        const model_classes = require("./assets/classes.json");
+        setModelClasses(model_classes);
         setClassificationModel(model);
 
       //If server-based doesn't work, then load the statically bundled model
@@ -122,10 +122,11 @@ export default function PoseClassifier(
       catch {
         const modelJSON = require('./assets/model.json');
         const modelWeights = require('./assets/group1-shard1of1.bin');
-        const model_classes = require("./assets/classes.json")
-        setModelClasses(model_classes)
-        const model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights))
+        const model_classes = require("./assets/classes.json");
+        setModelClasses(model_classes);
+        const model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights));
         setClassificationModel(model);
+        console.log("Loaded Static Model");
       }
 
       setDetector(detector);
@@ -148,8 +149,6 @@ export default function PoseClassifier(
           arr_expanded[0].push(pose[0].keypoints3D[i]['z'])
       }
     }
-    //const transposed_array = transpose(arr_expanded)
-    //return transposed_array
     return arr_expanded
   }
 
@@ -204,24 +203,15 @@ export default function PoseClassifier(
       // Pose Classification
       // TODO:// refactor into file
       // TODO:// prop for confidence threshold
-      const keypoints = formatArray(poses);
-      const classification = await classificationModel.predict(keypoints); 
-      setClassifiedPoses(classification);
-	  // FIXME const predictionResponse = await this.modelService.classifyImage(poses); IMPLEMENT THIS LINE
-      //ADD IN JSON PARSING, USE poses[0].keypoints3D
-      if(poses.length>0){
-        // Pose Classification
-        // TODO:// refactor into file
-        // TODO:// prop for confidence threshold
+      if(poses.length>0 && classificationModel != null){
         const keypoints = formatArray(poses);
         const tensor_keypoints = tf.tensor(keypoints)
-        if(classificationModel != null){
-          const classification_tensor = await classificationModel.predict(tensor_keypoints);
-          const poseName = decodePredictions(classification_tensor,modelClasses); 
-          setClassifiedPoses(classification_tensor);
-          console.log("Prediction:", poseName)
-        }
+        //const classification_tensor = await classificationModel.predict(tensor_keypoints);
+        //const poseName = decodePredictions(classification_tensor,modelClasses); 
+        setClassifiedPoses(classification_tensor);
+        console.log("Prediction:", poseName)
       }
+      
       
       tf.dispose([image]);
 

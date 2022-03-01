@@ -299,7 +299,7 @@ export default function App() {
         </TouchableOpacity>
         {renderPose()}
         {renderFps()}
-        <Text style={styles.poseName}>PoseName {poseName}</Text>
+        <Text style={styles.poseName}>{poseName}</Text>
       </View>
     );
   }
@@ -366,9 +366,12 @@ const styles = StyleSheet.create({
   },
   poseName: {
     position: 'relative',
-    backgroundColor: 'grey',
+    backgroundColor: 'white',
     alignItems: 'center',
-    color: 'white',
+    color: '#f194ff',
     zIndex: 20,
+    fontSize: 40,
+    marginTop: 15,
+    marginLeft: 20,
   }
 });

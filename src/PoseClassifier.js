@@ -5,7 +5,7 @@ import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
+import { cameraWithTensors, bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
 
 // tslint:disable-next-line: variable-name
@@ -118,9 +118,9 @@ export default function PoseClassifier(
       } 
       catch {
         try {
-          const modelJson = await require('./assets/model.json');
-          const modelWeights = await require('./assets/group1-shard1of1.bin');
-          model = await tf.loadLayersModel(bundleResourceIO(modelJson, modelWeights));
+          const modelJSON = require('./assets/model.json');
+          const modelWeights = require('./assets/group1-shard1of1.bin');
+          const model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights))
           setClassificationModel(model);
         } catch {
             console.log("Error in both tensor-server-based and compile-time model loading");

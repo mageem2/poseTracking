@@ -120,7 +120,7 @@ export default function PoseClassifier(
         try {
           const modelJson = await require('./assets/model.json');
           const modelWeights = await require('./assets/group1-shard1of1.bin');
-          model = await tf.loadGraphModel(bundleResourceIO(modelJson, modelWeights));
+          model = await tf.loadLayersModel(bundleResourceIO(modelJson, modelWeights));
           setClassificationModel(model);
         } catch {
             console.log("Error in both tensor-server-based and compile-time model loading");
@@ -136,21 +136,33 @@ export default function PoseClassifier(
     prepare();
   }, []);
 
-const formatArray = async (pose) => {
-  let arr_expanded = []
-  if (pose.length > 0) {
-    //define a new array
-    for (let i = 0; i < 33; i++) {
-        //array.push??? x3 (x,y,z)
-        arr_expanded.push(pose[0].keypoints3D[i]['x'])
-        arr_expanded.push(pose[0].keypoints3D[i]['y'])
-        arr_expanded.push(pose[0].keypoints3D[i]['z'])
-        // console.log(poses[0].keypoints3D[i]['name'])
-        // console.log(poses[0].keypoints3D[i]['x'])
+  const transpose = (arr) => {
+    for (let i = 0; i < arr.length; i++) {
+      for (let j = 0; j < i; j++) {
+        const tmp = arr[i][j];
+        arr[i][j] = arr[j][i];
+        arr[j][i] = tmp;
+      };
     }
   }
-  return arr_expanded
-}
+
+  const formatArray = (pose) => {
+    let arr_expanded = new Array([])
+    if (pose.length > 0) {
+      //define a new array
+      for (let i = 0; i < 33; i++) {
+          //array.push??? x3 (x,y,z)
+          arr_expanded[0].push(pose[0].keypoints3D[i]['x'])
+          arr_expanded[0].push(pose[0].keypoints3D[i]['y'])
+          arr_expanded[0].push(pose[0].keypoints3D[i]['z'])
+          // console.log(poses[0].keypoints3D[i]['name'])
+          // console.log(poses[0].keypoints3D[i]['x'])
+      }
+    }
+    const transposed_array = transpose(arr_expanded)
+
+    return transposed_array
+  }
 
   const handleCameraStream = async (
     images,
@@ -180,8 +192,10 @@ const formatArray = async (pose) => {
         // TODO:// refactor into file
         // TODO:// prop for confidence threshold
         const keypoints = formatArray(poses);
-        const classification = await classificationModel.predict(keypoints); 
+        tensor_keypoints = tf.tensor(array)
+        const classification = await classificationModel.predict(tensor_keypoints); 
         setClassifiedPoses(classification);
+        console.log("Prediction:", classification)
       }
       
       tf.dispose([image]);

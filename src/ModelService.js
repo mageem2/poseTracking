@@ -57,7 +57,7 @@ export default class ModelService{
         }
     }
 
-    decodePredictions(prediction, classes,topK=4){
+    decodePredictions(prediction, classes,topK=3) {
         const {values, indices} = prediction.topk(topK);
         const topKValues = values.dataSync();
         const topKIndices = indices.dataSync();
@@ -73,32 +73,19 @@ export default class ModelService{
         //console.log("prob", probability)
         return className[arg%3];
     }
-    
-    transpose(arr){
-        for (let i = 0; i < arr.length; i++) {
-           for (let j = 0; j < i; j++) {
-              const tmp = arr[i][j];
-              arr[i][j] = arr[j][i];
-              arr[j][i] = tmp;
-           };
-        }
-     }
 
     indexOfMax(arr) {
         if (arr.length === 0) {
             return -1;
         }
-    
         var max = arr[0];
         var maxIndex = 0;
-    
         for (var i = 1; i < arr.length; i++) {
             if (arr[i] > max) {
                 maxIndex = i;
                 max = arr[i];
             }
         }
-    
         return maxIndex;
     }
     
@@ -111,11 +98,8 @@ export default class ModelService{
                 arr_expanded[0].push(pose[0].keypoints3D[i]['x'])
                 arr_expanded[0].push(pose[0].keypoints3D[i]['y'])
                 arr_expanded[0].push(pose[0].keypoints3D[i]['z'])
-                // console.log(poses[0].keypoints3D[i]['name'])
-                // console.log(poses[0].keypoints3D[i]['x'])
             }
-            }
-        //let a = this.transpose(arr_expanded)
+        }
     
         return arr_expanded
     }

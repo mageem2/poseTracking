@@ -153,23 +153,6 @@ export default function PoseClassifier(
     return arr_expanded
   }
 
-  const decodePredictions = (prediction, classes,topK=4) => {
-    const {values, indices} = prediction.topk(topK);
-    const topKValues = values.dataSync();
-    const topKIndices = indices.dataSync();
-  
-    const className = [];
-    const probability = [];
-    for (let i = 0; i < topKIndices.length; i++) {
-        className.push(classes[topKIndices[i]])
-        probability.push(topKValues[i])
-    }
-    const arg = this.indexOfMax(probability)
-    //console.log("classes", className)
-    //console.log("prob", probability)
-    return className[arg%3];
-  }
-
   const indexOfMax = (arr) => {
     if (arr.length === 0) {
         return -1;
@@ -183,7 +166,25 @@ export default function PoseClassifier(
         }
     }
     return maxIndex;
-}
+  }
+
+
+  const decodePredictions = (prediction, classes,topK=3) => {
+    const {values, indices} = prediction.topk(topK);
+    const topKValues = values.dataSync();
+    const topKIndices = indices.dataSync();
+  
+    const className = [];
+    const probability = [];
+    for (let i = 0; i < topKIndices.length; i++) {
+        className.push(classes[topKIndices[i]])
+        probability.push(topKValues[i])
+    }
+    const arg = indexOfMax(probability)
+    //console.log("classes", className)
+    //console.log("prob", probability)
+    return className[arg%3];
+  }
 
   const handleCameraStream = async (
     images,
@@ -214,7 +215,7 @@ export default function PoseClassifier(
         // TODO:// prop for confidence threshold
         const keypoints = formatArray(poses);
         const tensor_keypoints = tf.tensor(keypoints)
-        if(classificationModel){
+        if(classificationModel != null){
           const classification_tensor = await classificationModel.predict(tensor_keypoints);
           const poseName = decodePredictions(classification_tensor,modelClasses); 
           setClassifiedPoses(classification_tensor);

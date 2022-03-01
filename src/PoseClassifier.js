@@ -110,7 +110,7 @@ export default function PoseClassifier(
       //Try server-based model loading
       try {
 		    const modelUrl = props.modelUrl;
-        const model = await tf.loadGraphModel(modelUrl);
+        const model = await tf.loadLayersModel(modelUrl);
         setClassificationModel(model);
 
       //If server-based doesn't work, then load the statically bundled model

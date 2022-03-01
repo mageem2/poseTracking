@@ -146,13 +146,11 @@ export default function PoseClassifier(
           arr_expanded[0].push(pose[0].keypoints3D[i]['x'])
           arr_expanded[0].push(pose[0].keypoints3D[i]['y'])
           arr_expanded[0].push(pose[0].keypoints3D[i]['z'])
-          // console.log(poses[0].keypoints3D[i]['name'])
-          // console.log(poses[0].keypoints3D[i]['x'])
       }
     }
     //const transposed_array = transpose(arr_expanded)
-    return arr_expanded
     //return transposed_array
+    return arr_expanded
   }
 
   const decodePredictions = (prediction, classes,topK=4) => {
@@ -215,11 +213,11 @@ export default function PoseClassifier(
         // TODO:// refactor into file
         // TODO:// prop for confidence threshold
         const keypoints = formatArray(poses);
-        tensor_keypoints = tf.tensor(keypoints)
+        const tensor_keypoints = tf.tensor(keypoints)
         if(classificationModel){
           const classification_tensor = await classificationModel.predict(tensor_keypoints);
-          const poseName = this.decodePredictions(classification_tensor,modelClasses); 
-          //setClassifiedPoses(classification);
+          const poseName = decodePredictions(classification_tensor,modelClasses); 
+          setClassifiedPoses(classification_tensor);
           console.log("Prediction:", poseName)
         }
       }

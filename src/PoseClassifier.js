@@ -7,6 +7,7 @@ import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { cameraWithTensors, bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
+import { and } from 'react-native-reanimated';
 
 // tslint:disable-next-line: variable-name
 const TensorCamera = cameraWithTensors(Camera);
@@ -203,11 +204,12 @@ export default function PoseClassifier(
       // Pose Classification
       // TODO:// refactor into file
       // TODO:// prop for confidence threshold
-      if(poses.length>0 && classificationModel != null){
+      if(poses.length>0 && classificationModel){
         const keypoints = formatArray(poses);
         const tensor_keypoints = tf.tensor(keypoints)
-        //const classification_tensor = await classificationModel.predict(tensor_keypoints);
-        //const poseName = decodePredictions(classification_tensor,modelClasses); 
+        const model = classificationModel.map()
+        const classification_tensor = await model.predict(tensor_keypoints);
+        const poseName = decodePredictions(classification_tensor,modelClasses); 
         setClassifiedPoses(classification_tensor);
         console.log("Prediction:", poseName)
       }

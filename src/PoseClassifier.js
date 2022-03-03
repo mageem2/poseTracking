@@ -8,6 +8,8 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { cameraWithTensors, bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
 
+import ClassificationUtil from './ClassificationUtil';
+
 // tslint:disable-next-line: variable-name
 const TensorCamera = cameraWithTensors(Camera);
 
@@ -67,7 +69,10 @@ export default function PoseClassifier(
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
   const [classificationModel, setClassificationModel] = useState(null);
   const [classifiedPoses, setClassifiedPoses] = useState(null);
+  const [classifiedPose, setClassifiedPose] = useState(null);
   const [modelClasses, setModelClasses] = useState(null);
+  const [classificationUtil, setClassificationUtil] = useState(null);
+
 
   useEffect(() => {
     async function prepare() {
@@ -98,32 +103,16 @@ export default function PoseClassifier(
 
       //Load Classification Model and Other Related Assets
 
+      const classificationUtilClass = new ClassificationUtil();
+      setClassificationUtil(classificationUtilClass);
+      const {model, labels} = await ClassificationUtil.loadModel(props.modelUrl);
+      
+
       //For information on serving a model from your own server
       // - Serving from your own server can make it so the app doesn't need to have a full update
       //   to add exercises and/or poses to the library
       // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
       // const MODEL_URL = '';
-
-      //Try server-based model loading
-      try {
-		    const modelUrl = props.modelUrl;
-        const model = await tf.loadLayersModel(modelUrl);
-        const model_classes = require("./assets/classes.json");
-        setModelClasses(model_classes);
-        setClassificationModel(model);
-
-      //If server-based doesn't work, then load the statically bundled model
-      //from within the source code
-      } 
-      catch {
-        const modelJSON = require('./assets/model.json');
-        const modelWeights = require('./assets/group1-shard1of1.bin');
-        const model_classes = require("./assets/classes.json");
-        setModelClasses(model_classes);
-        const model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights));
-        setClassificationModel(model);
-        console.log("Loaded Static Model");
-      }
 
       setDetector(detector);
 
@@ -193,7 +182,7 @@ export default function PoseClassifier(
       // Pose Classification
       // TODO:// refactor into file
       // TODO:// prop for confidence threshold
-      if(poses.length>0 && classificationModel){
+      if(poses.length>0){
         const keypoints = formatArray(poses);
         const tensor_keypoints = tf.tensor(keypoints)
         const model = classificationModel

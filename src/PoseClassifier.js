@@ -46,16 +46,16 @@ const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 const AUTO_RENDER = true;
 
 export default function PoseClassifier(
-  // props, 
-  // { 
-  //   //Setting Default parameters for components
-  //   modelUrl='', 
-  //   showFps=false, 
-  //   renderKeypoints=false,
-  //   estimationModelType='full',
-  //   cameraState='front',
-  //   estimationThreshold='0.5'
-  // } 
+  props, 
+  { 
+    //Setting Default parameters for components
+    modelUrl='', 
+    showFps=false, 
+    renderKeypoints=false,
+    estimationModelType='full',
+    cameraState='front',
+    estimationThreshold='0.5'
+  } 
 ) {
   //State variables to be used throughout the PoseClassifier Component
   // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
@@ -207,11 +207,11 @@ export default function PoseClassifier(
       if(poses.length>0 && classificationModel){
         const keypoints = formatArray(poses);
         const tensor_keypoints = tf.tensor(keypoints)
-        const model = classificationModel.map()
+        const model = classificationModel
         const classification_tensor = await model.predict(tensor_keypoints);
         const poseName = decodePredictions(classification_tensor,modelClasses); 
-        setClassifiedPoses(classification_tensor);
-        console.log("Prediction:", poseName)
+        setClassifiedPoses(poseName);
+        console.log("Prediction:", poseName);
       }
       
       

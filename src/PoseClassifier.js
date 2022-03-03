@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Platform, Button } from 'react-native';
 
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
@@ -7,7 +7,6 @@ import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { cameraWithTensors, bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
-import { and } from 'react-native-reanimated';
 
 // tslint:disable-next-line: variable-name
 const TensorCamera = cameraWithTensors(Camera);
@@ -97,11 +96,7 @@ export default function PoseClassifier(
         }
       );
 
-      //Load Pose Classification Model
-      //TODO://model url prop/param
-      //TODO Classification_Prop
-      //TODO:// adding in model label parsing for server-based and compile-time
-      //TODO:// change into separate file
+      //Load Classification Model and Other Related Assets
 
       //For information on serving a model from your own server
       // - Serving from your own server can make it so the app doesn't need to have a full update
@@ -142,9 +137,8 @@ export default function PoseClassifier(
   const formatArray = (pose) => {
     let arr_expanded = new Array([])
     if (pose.length > 0) {
-      //define a new array
+      //Separate x y z from 33 keypoint array -> 99 point array (33 * 3 (xyz) )
       for (let i = 0; i < 33; i++) {
-          //array.push??? x3 (x,y,z)
           arr_expanded[0].push(pose[0].keypoints3D[i]['x'])
           arr_expanded[0].push(pose[0].keypoints3D[i]['y'])
           arr_expanded[0].push(pose[0].keypoints3D[i]['z'])
@@ -181,8 +175,6 @@ export default function PoseClassifier(
         probability.push(topKValues[i])
     }
     const arg = indexOfMax(probability)
-    //console.log("classes", className)
-    //console.log("prob", probability)
     return className[arg%3];
   }
 
@@ -209,9 +201,9 @@ export default function PoseClassifier(
         const tensor_keypoints = tf.tensor(keypoints)
         const model = classificationModel
         const classification_tensor = await model.predict(tensor_keypoints);
-        const poseName = decodePredictions(classification_tensor,modelClasses); 
+        const poseName = decodePredictions(classification_tensor, modelClasses); 
         setClassifiedPoses(poseName);
-        console.log("Prediction:", poseName);
+        // console.log("Prediction:", classification_tensor.dataSync());
       }
       
       

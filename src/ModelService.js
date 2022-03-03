@@ -57,7 +57,7 @@ export default class ModelService{
         }
     }
 
-    decodePredictions(prediction, classes,topK=4){
+    decodePredictions(prediction, classes,topK=3){
         const {values, indices} = prediction.topk(topK);
         const topKValues = values.dataSync();
         const topKIndices = indices.dataSync();

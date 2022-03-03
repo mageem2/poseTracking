@@ -71,7 +71,7 @@ export default class ModelService{
         const arg = this.indexOfMax(probability)
         //console.log("classes", className)
         //console.log("prob", probability)
-        return className[arg%3];
+        return className[arg];
     }
     
     transpose(arr){

@@ -100,21 +100,21 @@ export default function PoseClassifier(
           runtime: 'tfjs'
         }
       );
+      setDetector(detector);
 
       //Load Classification Model and Other Related Assets
-
-      const classificationUtilClass = new ClassificationUtil();
-      setClassificationUtil(classificationUtilClass);
-      const {model, labels} = await ClassificationUtil.loadModel(props.modelUrl);
-      
 
       //For information on serving a model from your own server
       // - Serving from your own server can make it so the app doesn't need to have a full update
       //   to add exercises and/or poses to the library
       // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
-      // const MODEL_URL = '';
 
-      setDetector(detector);
+
+      const classificationUtilClass = new ClassificationUtil();
+      setClassificationUtil(classificationUtilClass);
+      const {model, labels} = await ClassificationUtil.loadModel(props.modelUrl);
+      setClassificationModel(model);
+      setModelClasses(labels);
 
       // Ready!
       setTfReady(true);
@@ -122,47 +122,6 @@ export default function PoseClassifier(
 
     prepare();
   }, []);
-
-  const formatArray = (pose) => {
-    let arr_expanded = new Array([])
-    if (pose.length > 0) {
-      //Separate x y z from 33 keypoint array -> 99 point array (33 * 3 (xyz) )
-      for (let i = 0; i < 33; i++) {
-          arr_expanded[0].push(pose[0].keypoints3D[i]['x'])
-          arr_expanded[0].push(pose[0].keypoints3D[i]['y'])
-          arr_expanded[0].push(pose[0].keypoints3D[i]['z'])
-      }
-    }
-    return arr_expanded
-  }
-
-  const indexOfMax = (arr) => {
-    if (arr.length === 0) {
-        return -1;
-    }
-    var max = arr[0];
-    var maxIndex = 0;
-    for (var i = 1; i < arr.length; i++) {
-        if (arr[i] > max) {
-            maxIndex = i;
-            max = arr[i];
-        }
-    }
-    return maxIndex;
-  }
-
-  const getClassifiedPose = (prediction, classes) => {
-    const {values, indices} = prediction.topk();
-    const topkValues = values.dataSync();
-    const topKIndices = indices.dataSync();
-
-    classes=classes.reverse()
-
-    const poseName = classes[topKIndices[0]];
-    const confidence = topkValues[0]
-
-    return [poseName, confidence];
-  }
 
   const handleCameraStream = async (
     images,

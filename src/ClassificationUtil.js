@@ -55,27 +55,21 @@ export default class ClassificationUtil{
         const topkValues = values.dataSync();
         const topKIndices = indices.dataSync();
     
-        classes=classes.reverse()
+        const poseName = classes[topKIndices[0]];
+        const confidence = topkValues[0]
+    
+        return [poseName, confidence];
+    }
+
+    async getClassifiedPoses (prediction, classes, pose_num) {
+        const {values, indices} = prediction.topk(pose_num);
+        const topkValues = values.dataSync();
+        const topKIndices = indices.dataSync();
     
         const poseName = classes[topKIndices[0]];
         const confidence = topkValues[0]
     
         return [poseName, confidence];
-      }
-
-    decodePredictions(prediction, classes,topK=3) {
-        const {values, indices} = prediction.topk(topK);
-        const topKValues = values.dataSync();
-        const topKIndices = indices.dataSync();
-      
-        const className = [];
-        const probability = [];
-        for (let i = 0; i < topKIndices.length; i++) {
-            className.push(classes[topKIndices[i]])
-            probability.push(topKValues[i])
-        }
-        const arg = this.indexOfMax(probability)
-        return className[arg];
     }
     
     formatArray(pose){

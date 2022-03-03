@@ -162,20 +162,17 @@ export default function PoseClassifier(
     return maxIndex;
   }
 
-
-  const decodePredictions = (prediction, classes,topK=3) => {
-    const {values, indices} = prediction.topk(topK);
-    const topKValues = values.dataSync();
+  const getClassifiedPose = (prediction, classes) => {
+    const {values, indices} = prediction.topk();
+    const topkValues = values.dataSync();
     const topKIndices = indices.dataSync();
-  
-    const className = [];
-    const probability = [];
-    for (let i = 0; i < topKIndices.length; i++) {
-        className.push(classes[topKIndices[i]])
-        probability.push(topKValues[i])
-    }
-    const arg = indexOfMax(probability)
-    return className[arg%3];
+
+    classes=classes.reverse()
+
+    const poseName = classes[topKIndices[0]];
+    const confidence = topkValues[0]
+
+    return [poseName, confidence];
   }
 
   const handleCameraStream = async (
@@ -201,7 +198,9 @@ export default function PoseClassifier(
         const tensor_keypoints = tf.tensor(keypoints)
         const model = classificationModel
         const classification_tensor = await model.predict(tensor_keypoints);
-        const poseName = decodePredictions(classification_tensor, modelClasses); 
+        const poseName = getClassifiedPose(classification_tensor, modelClasses)[0]; 
+        console.log(classification_tensor.dataSync())
+        console.log(poseName)
         setClassifiedPoses(poseName);
         // console.log("Prediction:", classification_tensor.dataSync());
       }

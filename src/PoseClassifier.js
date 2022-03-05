@@ -144,9 +144,7 @@ export default function PoseClassifier(
       if(poses.length>0){
         const keypoints = formatArray(poses);
         const tensor_keypoints = tf.tensor(keypoints)
-        const model = classificationModel
-        const classification_tensor = await model.predict(tensor_keypoints);
-        const poseName = getClassifiedPose(classification_tensor, modelClasses)[0]; 
+        //const poseName = getClassifiedPose(classificationModel, modelClasses)[0]; 
         console.log(classification_tensor.dataSync())
         console.log(poseName)
         setClassifiedPoses(poseName);

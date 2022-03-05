@@ -36,7 +36,7 @@ export default class ClassificationUtil{
         return [this.model, this.model_classes]
     }
 
-    async classifyPose(keypoints){ 
+    async classifyPose (keypoints) { 
         //use model to predict
         let array = this.formatArray(keypoints)
         tensor_of_keypoints = tf.tensor(array)
@@ -49,6 +49,8 @@ export default class ClassificationUtil{
             return poseName
         }
     }
+
+    
 
     async getClassifiedPose (prediction, classes) {
         const {values, indices} = prediction.topk();
@@ -77,7 +79,6 @@ export default class ClassificationUtil{
         if (pose.length > 0) {
             //define a new array
             for (let i = 0; i < 33; i++) {
-                //array.push??? x3 (x,y,z)
                 arr_expanded[0].push(pose[0].keypoints3D[i]['x'])
                 arr_expanded[0].push(pose[0].keypoints3D[i]['y'])
                 arr_expanded[0].push(pose[0].keypoints3D[i]['z'])

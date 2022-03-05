@@ -8,7 +8,7 @@ import * as ScreenOrientation from 'expo-screen-orientation';
 import { cameraWithTensors, bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
 
-import ClassificationUtil from './ClassificationUtil';
+import ClassificationUtil from './ClassificationUtil.js';
 
 // tslint:disable-next-line: variable-name
 const TensorCamera = cameraWithTensors(Camera);
@@ -109,8 +109,9 @@ export default function PoseTracker (
       // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
 
 
-      const classificationUtilClass = new ClassificationUtil();
-      setClassificationUtil(classificationUtilClass);
+      const classificationUtil = new ClassificationUtil();
+      setClassificationUtil(classificationUtil);
+      
       //model, label, and the associated hooks can be used to modify app (if needed)
       const {model, labels} = await classificationUtil.loadModel(modelUrl);
       if (model) {
@@ -146,8 +147,10 @@ export default function PoseTracker (
       if(poses.length>0) {
 
         const {poseName, confidence} = await classificationUtil.classifyPose(poses);
-        console.log(poseName);
-        console.log(confidence);
+        if(poseName && confidence) {
+          console.log(poseName);
+          console.log(confidence);
+        }
         //setClassifiedPose(detectedPose);
         //setClassifiedPoses(allPoses);
 

@@ -28,7 +28,7 @@ export default class ClassificationUtil{
         //Try server-based model loading
         try {
             this.model = await tf.loadLayersModel(model_url);
-            this.model_classes = require("./assets/classes.json");
+            this.model_classes = require('./assets/classes.json');
             console.log("Loaded Tensor Server Model");
 
         //If server-based doesn't work, then load the statically bundled model
@@ -43,18 +43,23 @@ export default class ClassificationUtil{
             console.log("Loaded Static Model");
         }
 
+        console.log(this.model);
+        console.log(this.model_classes);
+        
+
         return [this.model, this.model_classes]
     }
 
     async classifyPose (keypoints) { 
+
         //use model to predict
         const array = this.formatArray(keypoints)
         const tensor_of_keypoints = tf.tensor(array)
 
         //If the model exists then do classification
         if(this.model){
-            const predictionTensor = await this.model.predict(tensor_of_keypoints);
-            const {poseName, confidence} = await this.getClassifiedPose(predictionTensor,this.model_classes)[0];
+            const predictionTensor = this.model.predict(tensor_of_keypoints);
+            const {poseName, confidence} = this.getClassifiedPose(predictionTensor,this.model_classes);
             console.log(poseName);
             console.log(confidence);
 
@@ -68,8 +73,8 @@ export default class ClassificationUtil{
         const tensor_of_keypoints = tf.tensor(array)
 
         //If the model exists then do classification
-        if(this.model){
-            const predictionTensor = await this.model.predict(tensor_of_keypoints);
+        if(this.model) {
+            const predictionTensor = this.model.predict(tensor_of_keypoints);
             const {poseNames, confidences} = await this.getClassifiedPoses(predictionTensor,this.model_classes)[0];
             console.log(poseNames);
             console.log(confidences);
@@ -84,9 +89,9 @@ export default class ClassificationUtil{
         const tensor_of_keypoints = tf.tensor(array)
 
         //If the model exists then do classification
-        if(this.model){
-            const predictionTensor = await this.model.predict(tensor_of_keypoints);
-            const {poseNames, confidences} = await this.getClassifiedPosesSorted(predictionTensor,this.model_classes, this.model_classes.length)[0];
+        if(this.model) {
+            const predictionTensor = this.model.predict(tensor_of_keypoints);
+            const {poseNames, confidences} = this.getClassifiedPosesSorted(predictionTensor,this.model_classes, this.model_classes.length)[0];
             console.log(poseNames);
             console.log(confidences);
 
@@ -95,34 +100,34 @@ export default class ClassificationUtil{
     }
 
     async getClassifiedPose (prediction, classes) {
-        const {value, index} = prediction.topk();
-        const topkValue = value.data();
-        const topKIndex = index.data();
+        const {values, indices} = prediction.topk();
+        const topkValues = await values.array();
+        const topKIndices = await indices.array();
     
-        const poseName = classes[topKIndex[0]];
-        const confidence = topkValue[0]
+        const poseName = classes[topKIndices[0]];
+        const confidence = topkValues[0];
     
         return [poseName, confidence];
     }
 
     async getClassifiedPoses (prediction, classes) {
         const {values, indices} = await prediction.array();
-        const topkValues = values.data();
-        const topKIndices = indices.data();
+        const topkValues = await values.data();
+        const topKIndices = await indices.data();
     
         const poseName = classes[topKIndices[0]];
-        const confidence = topkValues[0]
+        const confidence = topkValues[0];
     
         return [poseName, confidence];
     }
 
     async getClassifiedPosesSorted (prediction, classes, numPoses) {
-        const {values, indices} = prediction.topk(numPoses);
+        const {values, indices} = prediction.topk(numPoses, sorted=true);
         const topkValues = values.data();
         const topKIndices = indices.data();
     
         const poseName = classes[topKIndices[0]];
-        const confidence = topkValues[0]
+        const confidence = topkValues[0];
     
         return [poseName, confidence];
     }
@@ -132,9 +137,9 @@ export default class ClassificationUtil{
         if (pose.length > 0) {
             //define a new array
             for (let i = 0; i < 33; i++) {
-                arr_expanded[0].push(pose[0].keypoints3D[i]['x'])
-                arr_expanded[0].push(pose[0].keypoints3D[i]['y'])
-                arr_expanded[0].push(pose[0].keypoints3D[i]['z'])
+                arr_expanded[0].push(pose[0].keypoints3D[i]['x']);
+                arr_expanded[0].push(pose[0].keypoints3D[i]['y']);
+                arr_expanded[0].push(pose[0].keypoints3D[i]['z']);
             }
         }
 

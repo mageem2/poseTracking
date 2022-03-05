@@ -46,8 +46,7 @@ const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 //      regardless of the awaits inside the loop
 const AUTO_RENDER = true;
 
-export default function PoseClassifier(
-  props, 
+export default function PoseTracker (
   { 
     //Setting Default parameters for components
     modelUrl='', 
@@ -67,13 +66,13 @@ export default function PoseClassifier(
   const [fps, setFps] = useState(0);
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  const [classificationModel, setClassificationModel] = useState(null);
   const [classifiedPoses, setClassifiedPoses] = useState(null);
   const [classifiedPose, setClassifiedPose] = useState(null);
-  const [modelClasses, setModelClasses] = useState(null);
   const [classificationUtil, setClassificationUtil] = useState(null);
+  const [classificationModel, setClassificationModel] = useState(null);
+  const [modelClasses, setModelClasses] = useState(null);
 
-
+  
   useEffect(() => {
     async function prepare() {
       // Set initial orientation.
@@ -112,9 +111,12 @@ export default function PoseClassifier(
 
       const classificationUtilClass = new ClassificationUtil();
       setClassificationUtil(classificationUtilClass);
-      const {model, labels} = await ClassificationUtil.loadModel(props.modelUrl);
-      setClassificationModel(model);
-      setModelClasses(labels);
+      //model, label, and the associated hooks can be used to modify app (if needed)
+      const {model, labels} = await classificationUtil.loadModel(modelUrl);
+      if (model) {
+        setClassificationModel(model);
+        setModelClasses(labels);
+      }
 
       // Ready!
       setTfReady(true);
@@ -141,14 +143,14 @@ export default function PoseClassifier(
       // Pose Classification
       // TODO:// refactor into file
       // TODO:// prop for confidence threshold
-      if(poses.length>0){
-        const keypoints = formatArray(poses);
-        const tensor_keypoints = tf.tensor(keypoints)
-        //const poseName = getClassifiedPose(classificationModel, modelClasses)[0]; 
-        console.log(classification_tensor.dataSync())
-        console.log(poseName)
-        setClassifiedPoses(poseName);
-        // console.log("Prediction:", classification_tensor.dataSync());
+      if(poses.length>0) {
+
+        const {poseName, confidence} = await classificationUtil.classifyPose(poses);
+        console.log(poseName);
+        console.log(confidence);
+        //setClassifiedPose(detectedPose);
+        //setClassifiedPoses(allPoses);
+
       }
       
       
@@ -324,7 +326,6 @@ export default function PoseClassifier(
           onPress={cameraTypeHandler}
           title="Switch"/>
         {renderPose()}
-        <Text>{classifiedPoses}</Text>
       </View>
     );
   }

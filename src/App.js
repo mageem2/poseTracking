@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { StyleSheet, Button, View, Text, TouchableHighlight, TouchableOpacity } from 'react-native';
+import { StyleSheet, Button, View, Text, TouchableHighlight, TouchableOpacity, ScrollView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {Component} from 'react';
@@ -9,6 +9,7 @@ import {CameraJ} from './Camera';
 function HomeScreen({ navigation }) {
   return (
     <View style={styles.main}>
+      <ScrollView style={styles.scrollView}>
       <Text style={{fontSize: 30,}}>Choose a Pose</Text>
       <View style={styles.row}>
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
@@ -26,7 +27,7 @@ function HomeScreen({ navigation }) {
         </TouchableOpacity>
         
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
-          <Text style={styles.boxContent}>Pose 4 (NOT HERE YET)</Text>
+          <Text style={styles.boxContent}>Push Ups</Text>
         </TouchableOpacity>
       </View>
 
@@ -40,6 +41,28 @@ function HomeScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
+
+      <View style={styles.row}>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>Pose 7 (NOT HERE YET)</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>Pose 8 (NOT HERE YET)</Text>
+        </TouchableOpacity>
+      </View>
+      <View style={styles.row}>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>Pose 9 (NOT HERE YET)</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
+          <Text style={styles.boxContent}>Pose 10 (NOT HERE YET)</Text>
+        </TouchableOpacity>
+      </View>
+
+
+    </ScrollView>
     </View>
   );
 }
@@ -95,6 +118,13 @@ const styles = StyleSheet.create({
     borderRadius:20,
     backgroundColor : "#2832C2",
   },
+
+  scrollView: {
+    flex: 1,
+    backgroundColor: 'pink',
+    marginHorizontal: 5,
+  },
+
   head:{
     textAlign: "center",
   },

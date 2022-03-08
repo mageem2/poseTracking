@@ -73,7 +73,7 @@ export default class ClassificationUtil{
         //If the model exists then do classification
         if(this.model) {
             const predictionTensor = await this.model.predict(tensor_of_keypoints);
-            const classifiedPoses = await this.getClassifiedPoses(predictionTensor,this.model_classes);
+            const classifiedPoses = await this.getClassifiedPoses(predictionTensor,this.model_classes, this.model_classes.length);
 
             return classifiedPoses;
         }
@@ -108,8 +108,6 @@ export default class ClassificationUtil{
 
     async getClassifiedPoses (prediction, classes, numPoses) {
         const {values, indices} = await prediction.topk(numPoses);
-        values.print();
-        indices.print();
         const topKValues = await values.data();
         const topKIndices = await indices.data();
 

@@ -142,7 +142,6 @@ export default function PoseTracker (
       setPoses(poses);
 
       // Pose Classification
-      // TODO:// refactor into file
       // TODO:// prop for confidence threshold
       if(poses.length>0) {
 
@@ -150,14 +149,7 @@ export default function PoseTracker (
         const classified_poses = await classificationUtil.classifyPoses(poses);
         if(poseName && confidence) {
           console.log(classified_poses);
-          // console.log(poseNames);
-          // console.log(confidences);
-          //setClassifiedPose([ poseName, confidence ]);
-          // console.log(poseName);
-          // console.log(confidence);
         }
-        //setClassifiedPose(detectedPose);
-        //setClassifiedPoses(allPoses);
 
       }
       

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
-import { fetch ,asyncStorageIO,bundleResourceIO,decodeJpeg} from '@tensorflow/tfjs-react-native'
+import { fetch ,asyncStorageIO, bundleResourceIO,decodeJpeg} from '@tensorflow/tfjs-react-native'
 
 export default class ClassificationUtil{
 
@@ -72,7 +72,7 @@ export default class ClassificationUtil{
 
         //If the model exists then do classification
         if(this.model) {
-            const predictionTensor = this.model.predict(tensor_of_keypoints);
+            const predictionTensor = await this.model.predict(tensor_of_keypoints);
             const classifiedPoses = await this.getClassifiedPoses(predictionTensor,this.model_classes);
 
             return classifiedPoses;
@@ -106,21 +106,25 @@ export default class ClassificationUtil{
         return [poseName, confidence];
     }
 
-    async getClassifiedPoses (prediction, classes) {
-        const arrayFromTensors = await prediction.array();
-        const object = {};
-        //     classifiedPoses = [
-        //         {
-        //             name: "",
-        //             confidence: 0
-        //         }
-        //     ]
-        // }
+    async getClassifiedPoses (prediction, classes, numPoses) {
+        const {values, indices} = await prediction.topk(numPoses);
+        values.print();
+        indices.print();
+        const topKValues = await values.data();
+        const topKIndices = await indices.data();
 
-        for (let i = 0; i < arrayFromTensors.length; i++) {
-            
-            object["classifiedPoses"[i]["name"]] = arrayFromTensors[i];
-            object["classifiedPoses"[i]["confidence"]] = classes[i];
+        const object = {
+            classifiedPoses : [
+                {
+                    poseName:"",
+                    confidence: 0.00
+                }
+            ]
+        };
+
+        for (let i = 0; i < topKIndices.length; i++) {
+            object.classifiedPoses[i].poseName= classes[topKIndices[i]];
+            object.classifiedPoses[i].confidence = topKValues[i];
         }
 
         return object;

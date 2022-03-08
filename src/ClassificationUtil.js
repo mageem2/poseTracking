@@ -58,10 +58,8 @@ export default class ClassificationUtil{
 
         //If the model exists then do classification
         if(this.model){
-            const predictionTensor = this.model.predict(tensor_of_keypoints);
-            const {poseName, confidence} = this.getClassifiedPose(predictionTensor,this.model_classes);
-            console.log(poseName);
-            console.log(confidence);
+            const predictionTensor = await this.model.predict(tensor_of_keypoints);
+            const [poseName, confidence] = await this.getClassifiedPose(predictionTensor,this.model_classes);
 
             return [poseName, confidence];
         }
@@ -70,14 +68,12 @@ export default class ClassificationUtil{
     async classifyPoses (keypoints) { 
         //use model to predict
         const array = this.formatArray(keypoints)
-        const tensor_of_keypoints = tf.tensor(array)
+        const tensor_of_keypoints = tf.tensor(array)[0]
 
         //If the model exists then do classification
         if(this.model) {
             const predictionTensor = this.model.predict(tensor_of_keypoints);
-            const {poseNames, confidences} = await this.getClassifiedPoses(predictionTensor,this.model_classes)[0];
-            console.log(poseNames);
-            console.log(confidences);
+            const [poseNames, confidences] = await this.getClassifiedPoses(predictionTensor,this.model_classes);
 
             return [poseNames, confidences];
         }
@@ -91,7 +87,7 @@ export default class ClassificationUtil{
         //If the model exists then do classification
         if(this.model) {
             const predictionTensor = this.model.predict(tensor_of_keypoints);
-            const {poseNames, confidences} = this.getClassifiedPosesSorted(predictionTensor,this.model_classes, this.model_classes.length)[0];
+            const [poseNames, confidences] = this.getClassifiedPosesSorted(predictionTensor,this.model_classes, this.model_classes.length)[0];
             console.log(poseNames);
             console.log(confidences);
 
@@ -101,17 +97,17 @@ export default class ClassificationUtil{
 
     async getClassifiedPose (prediction, classes) {
         const {values, indices} = prediction.topk();
-        const topkValues = await values.array();
-        const topKIndices = await indices.array();
-    
+        const topkValues = await values.data();
+        const topKIndices = await indices.data();
+
         const poseName = classes[topKIndices[0]];
         const confidence = topkValues[0];
-    
+
         return [poseName, confidence];
     }
 
     async getClassifiedPoses (prediction, classes) {
-        const {values, indices} = await prediction.array();
+        const [values, indices] = await prediction.array();
         const topkValues = await values.data();
         const topKIndices = await indices.data();
     
@@ -122,7 +118,7 @@ export default class ClassificationUtil{
     }
 
     async getClassifiedPosesSorted (prediction, classes, numPoses) {
-        const {values, indices} = prediction.topk(numPoses, sorted=true);
+        const [values, indices] = prediction.topk(numPoses, sorted=true);
         const topkValues = values.data();
         const topKIndices = indices.data();
     

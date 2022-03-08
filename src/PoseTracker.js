@@ -146,7 +146,7 @@ export default function PoseTracker (
       // TODO:// prop for confidence threshold
       if(poses.length>0) {
 
-        const {poseName, confidence} = await classificationUtil.classifyPose(poses);
+        const [poseName, confidence] = await classificationUtil.classifyPose(poses);
         if(poseName && confidence) {
           console.log(poseName);
           console.log(confidence);

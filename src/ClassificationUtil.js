@@ -53,8 +53,8 @@ export default class ClassificationUtil{
     async classifyPose (keypoints) { 
 
         //use model to predict
-        const array = this.formatArray(keypoints)
-        const tensor_of_keypoints = tf.tensor(array)
+        const array = this.formatArray(keypoints);
+        const tensor_of_keypoints = tf.tensor(array);
 
         //If the model exists then do classification
         if(this.model){
@@ -67,22 +67,22 @@ export default class ClassificationUtil{
 
     async classifyPoses (keypoints) { 
         //use model to predict
-        const array = this.formatArray(keypoints)
-        const tensor_of_keypoints = tf.tensor(array)[0]
+        const array = this.formatArray(keypoints);
+        const tensor_of_keypoints = tf.tensor(array);
 
         //If the model exists then do classification
         if(this.model) {
             const predictionTensor = this.model.predict(tensor_of_keypoints);
-            const [poseNames, confidences] = await this.getClassifiedPoses(predictionTensor,this.model_classes);
+            const classifiedPoses = await this.getClassifiedPoses(predictionTensor,this.model_classes);
 
-            return [poseNames, confidences];
+            return classifiedPoses;
         }
     }
 
     async classifyPosesSorted (keypoints) {
         //use model to predict
-        const array = this.formatArray(keypoints)
-        const tensor_of_keypoints = tf.tensor(array)
+        const array = this.formatArray(keypoints);
+        const tensor_of_keypoints = tf.tensor(array);
 
         //If the model exists then do classification
         if(this.model) {
@@ -96,36 +96,50 @@ export default class ClassificationUtil{
     }
 
     async getClassifiedPose (prediction, classes) {
-        const {values, indices} = prediction.topk();
-        const topkValues = await values.data();
+        const {values, indices} = await prediction.topk();
+        const topKValues = await values.data();
         const topKIndices = await indices.data();
 
         const poseName = classes[topKIndices[0]];
-        const confidence = topkValues[0];
+        const confidence = topKValues[0];
 
         return [poseName, confidence];
     }
 
     async getClassifiedPoses (prediction, classes) {
-        const [values, indices] = await prediction.array();
-        const topkValues = await values.data();
-        const topKIndices = await indices.data();
-    
-        const poseName = classes[topKIndices[0]];
-        const confidence = topkValues[0];
-    
-        return [poseName, confidence];
+        const arrayFromTensors = await prediction.array();
+        const object = {};
+        //     classifiedPoses = [
+        //         {
+        //             name: "",
+        //             confidence: 0
+        //         }
+        //     ]
+        // }
+
+        for (let i = 0; i < arrayFromTensors.length; i++) {
+            
+            object["classifiedPoses"[i]["name"]] = arrayFromTensors[i];
+            object["classifiedPoses"[i]["confidence"]] = classes[i];
+        }
+
+        return object;
     }
 
     async getClassifiedPosesSorted (prediction, classes, numPoses) {
-        const [values, indices] = prediction.topk(numPoses, sorted=true);
-        const topkValues = values.data();
-        const topKIndices = indices.data();
+        const {values, indices} = prediction.topk(numPoses, sorted=true);
+        const topKValues = await values.data();
+        const topKIndices = await indices.data();
     
-        const poseName = classes[topKIndices[0]];
-        const confidence = topkValues[0];
+        const poseNames = []
+        const confidences = []
+
+        for (let i = 0; i < topKIndices.length(); i++) {
+            poseNames.push(classes[topKIndices[i]]);
+            confidences.push(topKValues[i]);
+        }
     
-        return [poseName, confidence];
+        return [poseNames, confidences];
     }
     
     formatArray(pose){

@@ -69,7 +69,7 @@ export default function PoseTracker (
   const [classifiedPoses, setClassifiedPoses] = useState(null);
   const [classifiedPose, setClassifiedPose] = useState(null);
   const [classificationUtil, setClassificationUtil] = useState(null);
-  const [classificationModel, setClassificationModel] = useState(null);
+  //const [classificationModel, setClassificationModel] = useState(null);
   const [modelClasses, setModelClasses] = useState(null);
 
   
@@ -147,9 +147,14 @@ export default function PoseTracker (
       if(poses.length>0) {
 
         const [poseName, confidence] = await classificationUtil.classifyPose(poses);
+        const classified_poses = await classificationUtil.classifyPoses(poses);
         if(poseName && confidence) {
-          console.log(poseName);
-          console.log(confidence);
+          console.log(classified_poses);
+          // console.log(poseNames);
+          // console.log(confidences);
+          //setClassifiedPose([ poseName, confidence ]);
+          // console.log(poseName);
+          // console.log(confidence);
         }
         //setClassifiedPose(detectedPose);
         //setClassifiedPoses(allPoses);

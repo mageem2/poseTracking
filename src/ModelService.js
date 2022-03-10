@@ -1,6 +1,7 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, {Component } from 'react';
 import * as tf from '@tensorflow/tfjs';
-import { fetch ,asyncStorageIO,bundleResourceIO,decodeJpeg} from '@tensorflow/tfjs-react-native'
+import {bundleResourceIO} from '@tensorflow/tfjs-react-native'
+import { Text } from 'react-native';
 
 // export const loadModel{
 //     const model = await tf.loadGraphModel(/*modelURL*/);
@@ -10,20 +11,11 @@ import { fetch ,asyncStorageIO,bundleResourceIO,decodeJpeg} from '@tensorflow/tf
 export default class ModelService{
 
     constructor(){
-        //load the model
-        //this.modelUrl = modelUrl;
 
-        //this.modelJSON = require('../assets/model.json');
-        //this.modelWeights = require('../assets/group1-shard1of1.bin');
-        //this.loadModel(modelJSON, modelWeights)
-        //const model_classes = require("../assets/classes.json")
-        //this.model = await tf.loadGraphModel(bundleResourceIO(modelUrl,modelWeights));
-        //const [model, setModel] = useState(null);
         this.model=null;
         this.model_classes=null;
         this.create.bind(this)
         this.classifyPose.bind(this)
-        
     }
 
     async create(){
@@ -118,6 +110,10 @@ export default class ModelService{
         //let a = this.transpose(arr_expanded)
     
         return arr_expanded
+    }
+
+    render(){
+        return (<Text></Text>)
     }
 }
 

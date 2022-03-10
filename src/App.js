@@ -9,6 +9,7 @@ import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
 import FormData from 'form-data';
 import ModelService from './ModelService.js'
+import {PoseTracker} from './PoseTracker'
 
 const TensorCamera = cameraWithTensors(Camera);
 
@@ -50,7 +51,7 @@ export default function App() {
   const [orientation, setOrientation] =
     useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  const [modelService, setModelService] = useState(null);
+  //const [modelService, setModelService] = useState(null);
   const [poseName, setPoseName] = useState(null);
 
 
@@ -72,9 +73,9 @@ export default function App() {
       await tf.ready();
 
       //load model
-      const modelService = new ModelService();
-      setModelService(modelService)
-      const model = await modelService.create()
+      //const modelService = new ModelService();
+      //setModelService(modelService)
+      //const model = await modelService.create()
 
       // Load Blazepose model.
       const detector = await poseDetection.createDetector(
@@ -112,8 +113,8 @@ export default function App() {
       
       if(poses.length>0){
         //call classify pose to get prediction
-        const poseName = await modelService.classifyPose(poses)
-        setPoseName(poseName)
+        //const poseName = await modelService.classifyPose(poses)
+        //setPoseName(poseName)
         //console.log("Prediction response", predictionResponse)
       }
       
@@ -300,6 +301,12 @@ export default function App() {
         {renderPose()}
         {renderFps()}
         <Text style={styles.poseName}>{poseName}</Text>
+        <PoseTracker 
+          modelURL='../assets/group1-shard1of1.bin' 
+          modelJson='../assets/model.json'
+          modelClasses='../assets/classes.json'
+          pose={poses}
+        />
       </View>
     );
   }

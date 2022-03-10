@@ -111,7 +111,10 @@ export default class ClassificationUtil{
         const topKValues = await values.data();
         const topKIndices = await indices.data();
 
-        let object = {
+        console.log(topKValues);
+        console.log(topKIndices);
+
+        let poseObject = {
             classifiedPoses : [
                 {
                     poseName:"",
@@ -120,10 +123,10 @@ export default class ClassificationUtil{
             ]
         };
 
-        console.log(object);
+        console.log(poseObject);
         for (let i = 0; i < topKIndices.length; i++) {
-            object.classifiedPoses[i].poseName = classes[topKIndices[i]];
-            object.classifiedPoses[i].confidence = topKValues[i];
+            poseObject.classifiedPoses[i].poseName = classes[topKIndices[i]];
+            poseObject.classifiedPoses[i].confidence = topKValues[i];
         }
 
         return object;

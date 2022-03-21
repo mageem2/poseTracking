@@ -111,25 +111,18 @@ export default class ClassificationUtil{
         const topKValues = await values.data();
         const topKIndices = await indices.data();
 
-        console.log(topKValues);
-        console.log(topKIndices);
+        let posesObject = {classifiedPoses : []}; //This will store an array of pose objects
+                                                    //each with a name & confidence
 
-        let poseObject = {
-            classifiedPoses : [
-                {
-                    poseName:"",
-                    confidence: 0.00,
-                }
-            ]
-        };
-
-        console.log(poseObject);
+        console.log(posesObject);
         for (let i = 0; i < topKIndices.length; i++) {
-            poseObject.classifiedPoses[i].poseName = classes[topKIndices[i]];
-            poseObject.classifiedPoses[i].confidence = topKValues[i];
+            let tempPoseObject = {poseName:"", confidence: 0.00};
+            tempPoseObject.poseName = classes[topKIndices[i]];
+            tempPoseObject.confidence = topKValues[i];
+            posesObject.classifiedPoses.push(tempPoseObject);
         }
-
-        return object;
+        console.log(posesObject);
+        return posesObject;
     }
 
     async getClassifiedPosesSorted (prediction, classes, numPoses) {

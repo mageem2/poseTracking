@@ -71,6 +71,7 @@ export default function PoseTracker (
   const [classificationUtil, setClassificationUtil] = useState(null);
   //const [classificationModel, setClassificationModel] = useState(null);
   const [modelClasses, setModelClasses] = useState(null);
+  const [poseMap, setPoseMap] = useState(null);
 
   
   useEffect(() => {
@@ -113,10 +114,11 @@ export default function PoseTracker (
       setClassificationUtil(classificationUtil);
       
       //model, label, and the associated hooks can be used to modify app (if needed)
-      const {model, labels} = await classificationUtil.loadModel(modelUrl);
+      const {model, labels, pose_map} = await classificationUtil.loadModel(modelUrl);
       if (model) {
         setClassificationModel(model);
         setModelClasses(labels);
+        setPoseMap(pose_map);
       }
 
       // Ready!

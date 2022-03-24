@@ -7,6 +7,7 @@
     "start": "react-native start"
   },
   "dependencies": {
+    "@exponent/punycode": "^1.0.0",
     "@mediapipe/pose": "^0.5.1635988162",
     "@react-native-async-storage/async-storage": "^1.15.10",
     "@tensorflow-models/pose-detection": "^0.0.6",
@@ -26,6 +27,7 @@
     "expo-splash-screen": "^0.14.1",
     "expo-status-bar": "~1.2.0",
     "expo-updates": "^0.11.4",
+    "punycode": "^2.1.1",
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "react-native": "0.64.3",

@@ -18,6 +18,7 @@ export default class ClassificationUtil{
         this.getClassifiedPoses.bind(this)
         this.getClassifiedPosesSorted.bind(this)
         this.model_url=null;
+        this.pose_map=null;
     }
 
     async loadModel(model_url){
@@ -46,9 +47,23 @@ export default class ClassificationUtil{
         console.log(this.model);
         console.log(this.model_classes);
         
+        //Create UTF-16 Encoded Pose Map 
+        this.model_classes, this.model_classes.length
+        this.pose_map = {};  //JSON object that will act like a dictionary
+        for (let i = 0; i < this.model_classes.length; i++) {
+            let char = String.fromCharCode(i);
+            const currentPose = this.model_classes[i];
+            this.pose_map[currentPose] = char;
+        }
+        console.log(this.pose_map);
 
-        return [this.model, this.model_classes]
+
+        return [this.model, this.model_classes, this.pose_map]
     }
+
+    // async getEncodedPoseMap (classes, numPoses) {
+
+    // }
 
     async classifyPose (keypoints) { 
 
@@ -114,14 +129,14 @@ export default class ClassificationUtil{
         let posesObject = {classifiedPoses : []}; //This will store an array of pose objects
                                                     //each with a name & confidence
 
-        console.log(posesObject);
+        // console.log(posesObject);
         for (let i = 0; i < topKIndices.length; i++) {
             let tempPoseObject = {poseName:"", confidence: 0.00};
             tempPoseObject.poseName = classes[topKIndices[i]];
             tempPoseObject.confidence = topKValues[i];
             posesObject.classifiedPoses.push(tempPoseObject);
         }
-        console.log(posesObject);
+        // console.log(posesObject);
         return posesObject;
     }
 

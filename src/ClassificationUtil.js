@@ -48,14 +48,30 @@ export default class ClassificationUtil{
         console.log(this.model_classes);
         
         //Create UTF-16 Encoded Pose Map 
-
+        //-accounts for surrogate pairs
+        //-accounts for unprintable characters
+        //~65,000 possible pose encodings
+        //-allows for use with movement window
+        // and fuzzy string search
         function convertToHex(str) {
-            var hex = '';
-            for(var i=0;i<str.length;i++) {
-                hex += ''+str.charCodeAt(i).toString(16);
+            var hex;
+            var result = "";
+            for (let i=0; i<str.length; i++) {
+                hex = str.charCodeAt(i).toString(16);
+                result += ("000"+hex).slice(-4);
             }
-            var result = "\\u" + "0000".substring(0, 4 - hex.length) + hex;
-            return result;
+            return result
+        }
+
+        String.prototype.hexEncode = function(){
+            var hex, i;
+        
+            var result = "";
+            for (i=0; i<this.length; i++) {
+                hex = this.charCodeAt(i).toString(16);
+                result += ("000"+hex).slice(-4);
+            }
+            return result
         }
 
         const CharClassRanges = [
@@ -68,101 +84,26 @@ export default class ClassificationUtil{
             ];
         const PrintableUnicode = new RegExp(`^[${CharClassRanges.join('')}]*$`, 'i');
 
-        // this.pose_map = {};  //JSON object that will act like a dictionary
-        // for (let i = 0; i < this.model_classes.length; i++) {
-        //     let UTF16_code_point = Number.parseInt(i, 16);
-        //     // let code_point = punycode.ucs2.encode(convertToHex(i));
-        //     let code_point = convertToHex(UTF16_code_point);
-        //     if (PrintableUnicode.test(code_point)) {
-        //         let currentPose = this.model_classes[i];
-        //         let char = String.fromCodePoint(UTF16_code_point);
-        //         this.pose_map[currentPose] = char;
-        //         console.log("char ", i, ":", String(convertToHex(char)));
-        //     } else {
-        //         i--;
-        //     }
-        // }
-
         this.pose_map = {};  //JSON object that will act like a dictionary
-        for (let i = 0; i < this.model_classes.length; i++) {
-            let UTF16_code_point = Number.parseInt(i, 16);
-            console.log("UTF16_code_point: ",UTF16_code_point);
-            let code_point = convertToHex(UTF16_code_point);
+        let num_poses = this.model_classes.length;
+        for (let i = 0; i < num_poses; i++) {
+            console.log("i: ",i);
+            current_num = '' + i;
+            let code_point = convertToHex(current_num);
+            // let code_point = convertToHex(i);
             console.log("code point: ",code_point);
-            let char = String.fromCodePoint(UTF16_code_point);
-            console.log("char: ",char);
-            // let char = String.fromCharCode(i);
-            const currentPose = this.model_classes[i];
-            this.pose_map[currentPose] = char;
-            console.log("char ", i+1, ":", code_point);
+            let char = String.fromCodePoint(code_point);
+            if (PrintableUnicode.test(char)) {
+                console.log("char: ",char);
+                // let char = String.fromCharCode(i);
+                const currentPose = this.model_classes[i];
+                this.pose_map[currentPose] = char;
+                console.log("char ", i+1, ":", char);
+            } else {
+                i--;
+            }
         }
-        console.log(this.pose_map);
-
-        //Create UTF-16 Encoded Pose Map 
-        //UTF-16 can only fit/encode ~65000 poses
-
-        //const CharClassRanges = [
-        // '0-9',  // Numeric
-        // 'a-z',  // Latin
-        // 'α-ω',  // Greek
-        // '一-龯', // Japanese -- https://gist.github.com/terrancesnyder/1345094
-        // '\uFB1D-\uFB4F', // Hebrew (a few in range are unprintable)
-        // '!"#$%&\'()*+,.\/:;<=>?@\\[\\] ^_`{|}~-' // Special charcters
-        // ];
-        // const PrintableUnicode = new RegExp(`^[${CharClassRanges.join('')}]*$`, 'i');
-
-        // function convertToHex(str) {
-        //     var hex = '';
-        //     for(var i=0;i<str.length;i++) {
-        //         hex += ''+str.charCodeAt(i).toString(16);
-        //     }
-        //     var result = "\\u" + "0000".substring(0, 4 - hex.length) + hex;
-        //     return result;
-        // }
-
-        // // let punycode = require('@exponent/punycode');
-        // this.pose_map = {};  //JSON object that will act like a dictionary
-        // for (let i = 0; i < this.model_classes.length; i++) {
-        //     let UTF16_code_point = Number.parseInt(i, 16);
-        //     // let code_point = punycode.ucs2.encode(convertToHex(i));
-        //     let code_point = convertToHex(UTF16_code_point);
-        //     if (PrintableUnicode.test(code_point)) {
-        //         let currentPose = this.model_classes[i];
-        //         let char = String.fromCodePoint(UTF16_code_point);
-        //         this.pose_map[currentPose] = char;
-        //         console.log("char ", i, ":", String(convertToHex(char)));
-        //     } else {
-        //         i--;
-        //     }
-        // }
-        // const PrintableUnicode = new RegExp(`^[${CharClassRanges.join('')}]*$`, 'i');
-
-        // function convertToHex(str) {
-        //     var hex = '';
-        //     for(var i=0;i<str.length;i++) {
-        //         hex += ''+str.charCodeAt(i).toString(16);
-        //     }
-        //     var result = "\\u" + "0000".substring(0, 4 - hex.length) + hex;
-        //     return result;
-        // }
-
-        // // let punycode = require('@exponent/punycode');
-        // this.pose_map = {};  //JSON object that will act like a dictionary
-        // for (let i = 0; i < this.model_classes.length; i++) {
-        //     let UTF16_code_point = Number.parseInt(i, 16);
-        //     // let code_point = punycode.ucs2.encode(convertToHex(i));
-        //     let code_point = convertToHex(UTF16_code_point);
-        //     if (PrintableUnicode.test(code_point)) {
-        //         let currentPose = this.model_classes[i];
-        //         let char = String.fromCodePoint(UTF16_code_point);
-        //         this.pose_map[currentPose] = char;
-        //         console.log("char ", i, ":", String(convertToHex(char)));
-        //     } else {
-        //         i--;
-        //     }
-        // }
         console.log("Pose Map: ",this.pose_map);
-
 
         return [this.model, this.model_classes, this.pose_map]
     }

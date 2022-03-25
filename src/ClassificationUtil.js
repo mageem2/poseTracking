@@ -81,11 +81,12 @@ export default class ClassificationUtil{
             '一-龯', // Japanese -- https://gist.github.com/terrancesnyder/1345094
             '\uFB1D-\uFB4F', // Hebrew (a few in range are unprintable)
             '!"#$%&\'()*+,.\/:;<=>?@\\[\\] ^_`{|}~-' // Special charcters
-            ];
+        ];
         const PrintableUnicode = new RegExp(`^[${CharClassRanges.join('')}]*$`, 'i');
 
         this.pose_map = {};  //JSON object that will act like a dictionary
         let num_poses = this.model_classes.length;
+        let current_num = '';
         for (let i = 0; i < num_poses; i++) {
             console.log("i: ",i);
             current_num = '' + i;

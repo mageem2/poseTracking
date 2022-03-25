@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
-import { fetch ,asyncStorageIO, bundleResourceIO,decodeJpeg} from '@tensorflow/tfjs-react-native'
+import { fetch ,asyncStorageIO, bundleResourceIO,decodeJpeg} from '@tensorflow/tfjs-react-native';
+import OrderedDict from 'collections';
 
 export default class ClassificationUtil{
 
@@ -60,23 +61,13 @@ export default class ClassificationUtil{
                 hex = str.charCodeAt(i).toString(16);
                 result += ("000"+hex).slice(-4);
             }
-            return result
-        }
-
-        String.prototype.hexEncode = function(){
-            var hex, i;
-        
-            var result = "";
-            for (i=0; i<this.length; i++) {
-                hex = this.charCodeAt(i).toString(16);
-                result += ("000"+hex).slice(-4);
-            }
+            result = "0x" + result;
             return result
         }
 
         const CharClassRanges = [
             '0-9',  // Numeric
-            'a-z',  // Latin
+            'a-zA-Z',  // Latin
             'α-ω',  // Greek
             '一-龯', // Japanese -- https://gist.github.com/terrancesnyder/1345094
             '\uFB1D-\uFB4F', // Hebrew (a few in range are unprintable)
@@ -88,18 +79,14 @@ export default class ClassificationUtil{
         let num_poses = this.model_classes.length;
         let current_num = '';
         for (let i = 0; i < num_poses; i++) {
-            console.log("i: ",i);
             current_num = '' + i;
             let code_point = convertToHex(current_num);
-            // let code_point = convertToHex(i);
-            console.log("code point: ",code_point);
+            // console.log("code point: ",code_point);
             let char = String.fromCodePoint(code_point);
             if (PrintableUnicode.test(char)) {
-                console.log("char: ",char);
-                // let char = String.fromCharCode(i);
                 const currentPose = this.model_classes[i];
                 this.pose_map[currentPose] = char;
-                console.log("char ", i+1, ":", char);
+                console.log("char ", i+1, ":", char, " : ",code_point);
             } else {
                 i--;
             }

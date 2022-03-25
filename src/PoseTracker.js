@@ -315,7 +315,6 @@ export default function PoseTracker (
           style={styles.camera}
           type={cameraType}
           autorender={AUTO_RENDER}
-          type={cameraType}
           // tensor related props
           resizeWidth={getOutputTensorWidth()}
           resizeHeight={getOutputTensorHeight()}

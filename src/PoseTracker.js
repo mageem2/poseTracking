@@ -50,20 +50,21 @@ export default function PoseTracker (
   { 
     //Setting Default parameters for components
     modelUrl='', 
-    showFps=false, 
-    renderKeypoints=false,
+    showFps=true, 
+    renderKeypoints=true,
     estimationModelType='full',
     cameraState='front',
     estimationThreshold='0.5'
   } 
 ) {
-  //State variables to be used throughout the PoseClassifier Component
+  //State variables to be used throughout the PoseTracker Component
   // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
   const cameraRef = useRef(null);
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);
   const [poses, setPoses] = useState(null);
-  const [fps, setFps] = useState(0);
+  const [estimationFps, setEstimationFps] = useState(0);
+  const [classificationFps, setClassificationFps] = useState(0);
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
   const [classifiedPoses, setClassifiedPoses] = useState(null);
@@ -142,7 +143,7 @@ export default function PoseTracker (
       const timestamp = performance.now();
       const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
       const latency = performance.now() - timestamp;
-      setFps(Math.floor(1000 / latency));
+      setEstimationFps(Math.floor(1000 / latency));
       setPoses(poses);
 
       // Pose Classification
@@ -173,7 +174,7 @@ export default function PoseTracker (
   };
 
   const renderPose = () => {
-    if (poses != null && poses.length > 0) {
+    if (poses != null && poses.length > 0 && renderKeypoints==true) {
       const keypoints = poses[0].keypoints
         .filter((k) => (k.score ?? 0) > MIN_KEYPOINT_SCORE)
         .map((k) => {

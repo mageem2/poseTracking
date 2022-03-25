@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
-import { fetch ,asyncStorageIO, bundleResourceIO,decodeJpeg} from '@tensorflow/tfjs-react-native';
+import { fetch ,asyncStorageIO, bundleResourceIO, decodeJpeg} from '@tensorflow/tfjs-react-native';
 export default class ClassificationUtil{
 
     //Sets up stats hooks for the classificatiion util class
@@ -49,7 +49,7 @@ export default class ClassificationUtil{
         console.log(this.model_classes);
         
         //Create UTF-16 Encoded Pose Map 
-        //-------------------------------------------------------
+        //------------------------------------------------------
         //-accounts for surrogate pairs
         //-accounts for unprintable characters
         //~65,000 possible pose encodings
@@ -80,9 +80,11 @@ export default class ClassificationUtil{
 
         //For loop to create pose map from classes.json pose names
         this.pose_map = {};  //JSON object that will act like a dictionary
+                             //for poses and their associated UTF-16 encoding
         let num_poses = this.model_classes.length;
         let current_num = '';
-        for (let i = 0; i < num_poses; i++) {
+        for (let i = 0; i < num_poses; i++) {  //creates a valid encoding for each
+                                               //known pose in classes.json
             current_num = '' + i;
             let code_point = convertToHex(current_num);
             let char = String.fromCodePoint(code_point);
@@ -98,6 +100,7 @@ export default class ClassificationUtil{
         //---------------------END------------------------------
 
         //Create Exercise Map
+        //------------------------------------------------------
         //-utilizes pose map from above
         //-maps exercises to an exercise string
         const exercises = require('./assets/exercises.json');
@@ -114,6 +117,7 @@ export default class ClassificationUtil{
         console.log("Exercise Map: ",this.exercise_map);
 
         return [this.model, this.model_classes, this.pose_map, this.exercise_map]
+        //---------------------END------------------------------
     }
 
     // 'classifyPose'

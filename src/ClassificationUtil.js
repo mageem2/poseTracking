@@ -9,7 +9,7 @@ export default class ClassificationUtil{
     constructor(){
         this.model=null;
         this.model_classes=null;
-        this.loadModel.bind(this);
+        this.loadClassification.bind(this);
         this.classifyPose.bind(this);
         this.classifyPoses.bind(this);
         this.getClassifiedPose.bind(this);
@@ -17,11 +17,12 @@ export default class ClassificationUtil{
         this.model_url=null;
         this.pose_map=null;
         this.exercise_map=null;
+        this.exercise_name_map=null;
         this.movement_window=null;
         this.exercise_tracker=null;
     }
 
-    //
+    //'loadClassification'
     async loadClassification(model_url){
         
         //Make sure tf is ready
@@ -112,12 +113,25 @@ export default class ClassificationUtil{
                 pose_name = exercises[exercise][i];
                 encoded_exercise_string += this.pose_map[pose_name];
             }
-            this.exercise_map[exercise] = encoded_exercise_string;
+            this.exercise_map[encoded_exercise_string] = exercise;
         }
         console.log("Exercise Map: ",this.exercise_map);
 
-        return [this.model, this.model_classes, this.pose_map, this.exercise_map]
         //---------------------END------------------------------
+
+        //Create Movement/Exercise Trie
+        //------------------------------------------------------
+        var FuzzyTrie = require('fuzzytrie');
+        var trie = new FuzzyTrie();
+        var exercises_ = this.exercise_map;
+        for (var exercise in exercises_) {
+            trie.add(exercise);
+        }
+        console.log("Exercise Trie: ", trie.all());
+        //---------------------END------------------------------
+
+
+        return [this.model, this.model_classes, this.pose_map, this.exercise_map]
     }
 
     // 'classifyPose'

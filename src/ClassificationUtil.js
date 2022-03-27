@@ -151,13 +151,15 @@ export default class ClassificationUtil{
         for (var exercise in this.exercise_map) {
             this.classified_exercises[exercise]=0;
         }
+        console.log("Classified Exercises: ",this.classified_exercises);
         //---------------------END------------------------------
-        //Create Encoding Map
+        //Create Exercise Encoding Map
         //------------------------------------------------------
         this.exercise_encoding_map={};
         for (var exercise in this.exercise_map) {
             this.exercise_encoding_map[this.exercise_map[exercise]]= exercise;
         }
+        console.log("Exercise Encoding Map: ",this.classified_exercises);
         //---------------------END------------------------------
 
         return [this.model, this.model_classes, this.pose_map, this.exercise_map]
@@ -360,7 +362,7 @@ export default class ClassificationUtil{
             }
             this.framecounter++;
         }
-        // console.log("Movement Window: ",this.movement_window);
+        console.log("Movement Window: ",this.movement_window);
     }
 
     async classifyExercise () {
@@ -380,7 +382,7 @@ export default class ClassificationUtil{
             }
         }
         // console.log("Trie search: ",results);
-        // console.log("Classified Exercises: ", this.classified_exercises);
+        console.log("Classified Exercises: ", this.classified_exercises);
     }
 
     // 'formatArray' takes a 2d array of 33 pose keypoints/landmarks

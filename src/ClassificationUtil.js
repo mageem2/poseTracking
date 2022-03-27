@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import { fetch ,asyncStorageIO, bundleResourceIO, decodeJpeg} from '@tensorflow/tfjs-react-native';
+import { and } from 'react-native-reanimated';
 export default class ClassificationUtil{
 
     //Sets up stats hooks for the classificatiion util class
@@ -18,8 +19,15 @@ export default class ClassificationUtil{
         this.pose_map=null;
         this.exercise_map=null;
         this.exercise_name_map=null;
-        this.movement_window=null;
-        this.exercise_tracker=null;
+        this.exercise_trie=null;  
+        this.movement_window=null;  //arramovement_window
+        this.classified_pose=null;  //string
+        this.classified_exercises=null; //object (JSON)
+
+        //TODO Fixes or temporary
+        this.framecounter=0;
+        this.resetlimit=20;
+        this.sameposecounter=0;
     }
 
     //'loadClassification'
@@ -47,7 +55,7 @@ export default class ClassificationUtil{
         }
 
         console.log(this.model);
-        console.log(this.model_classes);
+        console.log("Known Poses: ",this.model_classes);
         
         //Create UTF-16 Encoded Pose Map 
         //------------------------------------------------------
@@ -128,6 +136,7 @@ export default class ClassificationUtil{
             trie.add(exercise);
         }
         console.log("Exercise Trie: ", trie.all());
+        this.exercise_trie = trie;
         //---------------------END------------------------------
 
 
@@ -145,6 +154,8 @@ export default class ClassificationUtil{
         if(this.model){
             const predictionTensor = await this.model.predict(tensor_of_keypoints);
             const [poseName, confidence] = await this.getClassifiedPose(predictionTensor,this.model_classes);
+            
+            this.classified_pose = poseName;  //utilized with movement tracking / exercise classification
 
             return [poseName, confidence];
         }
@@ -161,7 +172,28 @@ export default class ClassificationUtil{
             const predictionTensor = await this.model.predict(tensor_of_keypoints);
             const classifiedPoses = await this.getClassifiedPoses(predictionTensor,this.model_classes, this.model_classes.length);
 
-            return classifiedPoses;
+            const poseName = classifiedPoses.classifiedPoses[0].poseName;  //gets the highest confidence pose name from poses object
+            this.classified_pose = poseName;  //utilized with movement tracking / exercise classification
+
+            return classifiedPoses;  //Poses Object - look @ getClassifiedPoses
+
+            // Example Pose Object Structure
+            // Object {
+            //     "classifiedPoses": Array [
+            //       Object {
+            //         "confidence": 0.008087530732154846,
+            //         "poseName": "t_pose",
+            //       },
+            //       Object {
+            //         "confidence": -0.2243289351463318,
+            //         "poseName": "tree",
+            //       },
+            //       Object {
+            //         "confidence": -1.0932643413543701,
+            //         "poseName": "warrior",
+            //       },
+            //     ],
+            //}
         }
     }
 
@@ -225,10 +257,73 @@ export default class ClassificationUtil{
         //}
     }
 
-    async getClassifiedEncodedPose () {
-
+    //Simply returns the encoding a pose
+    async getClassifiedEncodedPose (poseName) {
+        if(poseName) {
+            var encoded_pose = this.pose_map[poseName]
+            if(encoded_pose) {return encoded_pose;}
+            else {return "";}
+        } else {
+            return "";
+        } 
     }
     
+    //TODO://
+    // async setMovementWindowLimit (limit) {
+    //     if this.limit higher than whatever then reset movement window
+    // }
+
+    //'trackMovement'
+    // can be used to define in poseTracker when to
+    // check the current classifiedPose and add it
+    // to the movement window to be used with
+    // exercise classification
+    async trackMovement () {
+        if(this.framecounter > this.resetlimit) {
+            this.movement_window = []; //empties the exercise tracker
+                                        //if the user has been doing the same
+                                        //pose for too long (20 frames)
+        }
+        try {  //makes sure a pose has been classified
+            var pose_name = this.classified_pose;
+        } catch {  //if classified pose is empty/undefined
+            return
+        }
+        var encoded_pose = getClassifiedEncodedPose(pose_name);
+        try{  //movement window is not empty
+            var previous_pose = this.movement_window[this.movement_window.length - 1];
+            if(this.exercise_trie.has(encoded_pose)) { //pose exists in an exercise
+                if(previous_pose!=encoded_pose) {  //a new pose has been detected
+                    if(this.sameposecounter > 2) {  //makes sure user is not going between poses way too fast
+                                                    //   because of close cionfidences between two poses
+                                                    //  . Simply adds a little buffer to that situation.
+                        this.movement_window.push(encoded_pose);
+                        this.sameposecounter=0;
+                        this.framecounter=0;
+                    } else {
+                        this.sameposecounter++;
+                        this.framecounter
+                    }
+                } else {
+                    this.sameposecounter++;
+                    this.framecounter++;
+                }
+            }
+        } catch {  //movement window is likely empty
+            if(this.exercise_trie.has(encoded_pose)) {
+                this.movement_window.push(encoded_pose);
+                this.framecounter++;
+            }
+        }
+    }
+
+    async classifyExercise () {
+        var movement_string = this.movement_window.join("");
+        var max_distance = 1;
+        var results = this.exercise_trie.find(movement_string,max_distance);
+        console.log(results);
+    }
+
     // 'formatArray' takes a 2d array of 33 pose keypoints/landmarks
     // and converts it to 99 separate points of data by separating
     // the x, y, and z points of data.  (33*3=99)

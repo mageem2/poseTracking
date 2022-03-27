@@ -15,6 +15,9 @@ export default class ClassificationUtil{
         this.classifyPoses.bind(this);
         this.getClassifiedPose.bind(this);
         this.getClassifiedPoses.bind(this);
+        this.getClassifiedEncodedPose.bind(this);
+        this.classifyExercise.bind(this);
+        this.trackMovement.bind(this);
         this.model_url=null;
         this.pose_map=null;
         this.exercise_map=null;
@@ -287,13 +290,15 @@ export default class ClassificationUtil{
         try {  //makes sure a pose has been classified
             var pose_name = this.classified_pose;
         } catch {  //if classified pose is empty/undefined
-            return
+            return;
         }
-        var encoded_pose = getClassifiedEncodedPose(pose_name);
+        var encoded_pose = await this.getClassifiedEncodedPose(pose_name);
         try{  //movement window is not empty
             var previous_pose = this.movement_window[this.movement_window.length - 1];
             if(this.exercise_trie.has(encoded_pose)) { //pose exists in an exercise
+                console.log("bitch exists not empty");
                 if(previous_pose!=encoded_pose) {  //a new pose has been detected
+                    console.log("bitch new");
                     if(this.sameposecounter > 2) {  //makes sure user is not going between poses way too fast
                                                     //   because of close cionfidences between two poses
                                                     //  . Simply adds a little buffer to that situation.
@@ -310,18 +315,22 @@ export default class ClassificationUtil{
                 }
             }
         } catch {  //movement window is likely empty
+            console.log("bitch empty");
+            console.log("pose in exercise? ... : ",this.exercise_trie.has(encoded_pose))
             if(this.exercise_trie.has(encoded_pose)) {
                 this.movement_window.push(encoded_pose);
                 this.framecounter++;
             }
         }
+        console.log("Movement Window: ",this.movement_window);
     }
 
     async classifyExercise () {
+        if (!this.movement_window) {return;}
         var movement_string = this.movement_window.join("");
         var max_distance = 1;
         var results = this.exercise_trie.find(movement_string,max_distance);
-        console.log(results);
+        console.log("Trie search: ",results);
     }
 
     // 'formatArray' takes a 2d array of 33 pose keypoints/landmarks

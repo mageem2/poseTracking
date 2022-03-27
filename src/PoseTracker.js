@@ -152,9 +152,11 @@ export default function PoseTracker (
 
         const [poseName, confidence] = await classificationUtil.classifyPose(poses);
         const classified_poses = await classificationUtil.classifyPoses(poses);
-        // if(poseName && confidence) {
-        //   console.log(classified_poses);
-        // }
+        if(poseName && confidence) {
+          //console.log(classified_poses);
+          classificationUtil.trackMovement();
+          classificationUtil.classifyExercise();
+        }
 
       }
       

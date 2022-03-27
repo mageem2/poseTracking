@@ -23,13 +23,14 @@ export default class ClassificationUtil{
         this.exercise_map=null;
         this.exercise_name_map=null;
         this.exercise_trie=null;  
-        this.movement_window=null;  //arramovement_window
+        this.movement_window=[];  //arramovement_window
         this.classified_pose=null;  //string
         this.classified_exercises=null; //object (JSON)
+        this.exercise_encoding_map=null;
 
         //TODO Fixes or temporary
         this.framecounter=0;
-        this.resetlimit=20;
+        this.resetlimit=50;
         this.sameposecounter=0;
     }
 
@@ -142,6 +143,22 @@ export default class ClassificationUtil{
         this.exercise_trie = trie;
         //---------------------END------------------------------
 
+        //---------------------END------------------------------
+
+        //Create Classified Exercises Variable
+        //------------------------------------------------------
+        this.classified_exercises={};
+        for (var exercise in this.exercise_map) {
+            this.classified_exercises[exercise]=0;
+        }
+        //---------------------END------------------------------
+        //Create Encoding Map
+        //------------------------------------------------------
+        this.exercise_encoding_map={};
+        for (var exercise in this.exercise_map) {
+            this.encoding_map[this.exercise_map[exercise]]= exercise;
+        }
+        //---------------------END------------------------------
 
         return [this.model, this.model_classes, this.pose_map, this.exercise_map]
     }
@@ -286,41 +303,62 @@ export default class ClassificationUtil{
             this.movement_window = []; //empties the exercise tracker
                                         //if the user has been doing the same
                                         //pose for too long (20 frames)
+            this.framecounter=0; //resets framecount
         }
         try {  //makes sure a pose has been classified
             var pose_name = this.classified_pose;
         } catch {  //if classified pose is empty/undefined
             return;
         }
-        var encoded_pose = await this.getClassifiedEncodedPose(pose_name);
-        try{  //movement window is not empty
+        let encoded_pose = await this.getClassifiedEncodedPose(pose_name);
+        // console.log("Encoded pose: ",encoded_pose);
+        let has_pose = this.exercise_trie.has(encoded_pose); //looks at if pose exists in known
+                                                              //exercises trie.
+                                                              //undefined - the prefix exists
+                                                              //true - the exact word exists
+                                                              //false - the prefix or word doesn't exist
+        if(this.movement_window.length > 0) {  //if movement window is not empty
+            let temp_window = [...this.movement_window]; //copies movement window array
+            temp_window.push(encoded_pose);
+            let movement_window_with_new_encoded_pose = temp_window;
+            let encoded_prefix = movement_window_with_new_encoded_pose.join("");
+            // console.log("Encoded prefix: ",encoded_prefix);
+            let has_prefix = this.exercise_trie.has(encoded_prefix); //looks at if prefix exists in known
+                                                                //exercises trie.
+                                                                //undefined - the prefix exists
+                                                                //true - the exact word exists
+                                                                //false - the prefix or word doesn't exist
             var previous_pose = this.movement_window[this.movement_window.length - 1];
-            if(this.exercise_trie.has(encoded_pose)) { //pose exists in an exercise
-                console.log("bitch exists not empty");
-                if(previous_pose!=encoded_pose) {  //a new pose has been detected
-                    console.log("bitch new");
-                    if(this.sameposecounter > 2) {  //makes sure user is not going between poses way too fast
-                                                    //   because of close cionfidences between two poses
+            // console.log("has prefix: ",has_prefix);
+            if(previous_pose!=encoded_pose) {//a new pose has been detected
+                // console.log("bitch new");
+                if(has_prefix==undefined || has_prefix==true) {//pose exists in an exercise
+                    // console.log("bitch exists");
+                    if(this.sameposecounter > 5) {  //makes sure user is not going between poses way too fast
+                                                    //   because of close confidences between two poses
                                                     //  . Simply adds a little buffer to that situation.
+                                                    // - A synthetic way of doing smoothing.
                         this.movement_window.push(encoded_pose);
                         this.sameposecounter=0;
                         this.framecounter=0;
-                    } else {
+                    } else {// Pose changed too fast.  Increment counters to assume same pose was done
                         this.sameposecounter++;
-                        this.framecounter
+                        this.framecounter++;
                     }
-                } else {
-                    this.sameposecounter++;
+                } else {//pose doesn't exist in exercise, but increment frame count anyway
                     this.framecounter++;
                 }
-            }
-        } catch {  //movement window is likely empty
-            console.log("bitch empty");
-            console.log("pose in exercise? ... : ",this.exercise_trie.has(encoded_pose))
-            if(this.exercise_trie.has(encoded_pose)) {
-                this.movement_window.push(encoded_pose);
+            } else {//not a new pose from previous so add sameposecount and framecount
+                this.sameposecounter++;
                 this.framecounter++;
             }
+        } else {  //movement window is empty
+            // console.log("bitch empty");
+            // console.log("pose in exercise? ... : ",has_pose)
+            if(has_pose==undefined) {
+                this.movement_window.push(encoded_pose);
+            }
+            this.framecounter++;
         }
         console.log("Movement Window: ",this.movement_window);
     }
@@ -330,6 +368,17 @@ export default class ClassificationUtil{
         var movement_string = this.movement_window.join("");
         var max_distance = 1;
         var results = this.exercise_trie.find(movement_string,max_distance);
+        for(prefix in results) { //look at each possible exercise from the current movement
+                                 //window.
+            const distance = results[prefix];
+            if(distance == 0) { //movement window is a known exercise
+                const classified_exercise_name = this.exercise_encoding_map[prefix];
+                this.classified_exercises[classified_exercise_name] += 1; //add a rep to classifed exercise
+                                                                          //to classified exercise object.
+                                                                          //This allows for rep tracking.
+                this.movement_window = [];  //empties current movement window
+            }
+        }
         console.log("Trie search: ",results);
     }
 

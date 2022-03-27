@@ -156,7 +156,7 @@ export default class ClassificationUtil{
         //------------------------------------------------------
         this.exercise_encoding_map={};
         for (var exercise in this.exercise_map) {
-            this.encoding_map[this.exercise_map[exercise]]= exercise;
+            this.exercise_encoding_map[this.exercise_map[exercise]]= exercise;
         }
         //---------------------END------------------------------
 
@@ -360,7 +360,7 @@ export default class ClassificationUtil{
             }
             this.framecounter++;
         }
-        console.log("Movement Window: ",this.movement_window);
+        // console.log("Movement Window: ",this.movement_window);
     }
 
     async classifyExercise () {
@@ -368,7 +368,7 @@ export default class ClassificationUtil{
         var movement_string = this.movement_window.join("");
         var max_distance = 1;
         var results = this.exercise_trie.find(movement_string,max_distance);
-        for(prefix in results) { //look at each possible exercise from the current movement
+        for(var prefix in results) { //look at each possible exercise from the current movement
                                  //window.
             const distance = results[prefix];
             if(distance == 0) { //movement window is a known exercise
@@ -379,7 +379,8 @@ export default class ClassificationUtil{
                 this.movement_window = [];  //empties current movement window
             }
         }
-        console.log("Trie search: ",results);
+        // console.log("Trie search: ",results);
+        // console.log("Classified Exercises: ", this.classified_exercises);
     }
 
     // 'formatArray' takes a 2d array of 33 pose keypoints/landmarks

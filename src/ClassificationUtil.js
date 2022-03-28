@@ -334,9 +334,7 @@ export default class ClassificationUtil{
             var previous_pose = this.movement_window[this.movement_window.length - 1];
             // console.log("has prefix: ",has_prefix);
             if(previous_pose!=encoded_pose) {//a new pose has been detected
-                // console.log("bitch new");
                 if(has_prefix==undefined || has_prefix==true) {//pose exists in an exercise
-                    // console.log("bitch exists");
                     if(this.sameposecounter > 5) {  //makes sure user is not going between poses way too fast
                                                     //   because of close confidences between two poses
                                                     //  . Simply adds a little buffer to that situation.
@@ -356,7 +354,6 @@ export default class ClassificationUtil{
                 this.framecounter++;
             }
         } else {  //movement window is empty
-            // console.log("bitch empty");
             // console.log("pose in exercise? ... : ",has_pose)
             if(has_pose==undefined) {
                 this.movement_window.push(encoded_pose);

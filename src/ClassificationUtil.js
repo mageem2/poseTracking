@@ -25,8 +25,8 @@ export default class ClassificationUtil{
         this.exercise_trie=null;  
         this.movement_window=[];  //arramovement_window
         this.classified_pose=null;  //string
+        this.classified_exercise=null;  //string
         this.classified_exercises=null; //object (JSON)
-        this.exercise_encoding_map=null;
 
         //TODO Fixes or temporary
         this.framecounter=0;
@@ -149,17 +149,18 @@ export default class ClassificationUtil{
         //------------------------------------------------------
         this.classified_exercises={};
         for (var exercise in this.exercise_map) {
-            this.classified_exercises[exercise]=0;
+            var exercise_name = this.exercise_map[exercise];
+            this.classified_exercises[exercise_name]=0;
         }
         console.log("Classified Exercises: ",this.classified_exercises);
         //---------------------END------------------------------
         //Create Exercise Encoding Map
         //------------------------------------------------------
-        this.exercise_encoding_map={};
-        for (var exercise in this.exercise_map) {
-            this.exercise_encoding_map[this.exercise_map[exercise]]= exercise;
-        }
-        console.log("Exercise Encoding Map: ",this.classified_exercises);
+        // this.exercise_encoding_map={};
+        // for (var exercise in this.exercise_map) {
+        //     this.exercise_encoding_map[this.exercise_map[exercise]]= exercise;
+        // }
+        // console.log("Exercise Encoding Map: ",this.classified_exercises);
         //---------------------END------------------------------
 
         return [this.model, this.model_classes, this.pose_map, this.exercise_map]
@@ -374,14 +375,17 @@ export default class ClassificationUtil{
                                  //window.
             const distance = results[prefix];
             if(distance == 0) { //movement window is a known exercise
-                const classified_exercise_name = this.exercise_encoding_map[prefix];
-                this.classified_exercises[classified_exercise_name] += 1; //add a rep to classifed exercise
+                const classified_exercise_name = this.exercise_map[prefix];
+                this.classified_exercise = classified_exercise_name;      //Save this classified exercise to
+                                                                          //the state variable to keep track
+                                                                          //of the most recent exercise.
+                this.classified_exercises[classified_exercise_name] += 1; //Add a rep to classifed exercise
                                                                           //to classified exercise object.
                                                                           //This allows for rep tracking.
                 this.movement_window = [];  //empties current movement window
             }
         }
-        // console.log("Trie search: ",results);
+        //console.log("Trie search: ",results);
         console.log("Classified Exercises: ", this.classified_exercises);
     }
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import { fetch ,asyncStorageIO, bundleResourceIO, decodeJpeg} from '@tensorflow/tfjs-react-native';
 import { and } from 'react-native-reanimated';
+import { encode } from 'punycode';
 export default class ClassificationUtil{
 
     //Sets up stats hooks for the classificatiion util class
@@ -30,8 +31,9 @@ export default class ClassificationUtil{
 
         //TODO Fixes or temporary
         this.framecounter=0;
-        this.resetlimit=50;
+        this.resetlimit=20;
         this.sameposecounter=0;
+        this.smoothingbuffer=1;
     }
 
     //'loadClassification'
@@ -290,11 +292,6 @@ export default class ClassificationUtil{
             return "";
         } 
     }
-    
-    //TODO://
-    // async setMovementWindowLimit (limit) {
-    //     if this.limit higher than whatever then reset movement window
-    // }
 
     //'trackMovement'
     // can be used to define in poseTracker when to
@@ -314,7 +311,6 @@ export default class ClassificationUtil{
             return;
         }
         let encoded_pose = await this.getClassifiedEncodedPose(pose_name);
-        // console.log("Encoded pose: ",encoded_pose);
         let has_pose = this.exercise_trie.has(encoded_pose); //looks at if pose exists in known
                                                               //exercises trie.
                                                               //undefined - the prefix exists
@@ -325,17 +321,15 @@ export default class ClassificationUtil{
             temp_window.push(encoded_pose);
             let movement_window_with_new_encoded_pose = temp_window;
             let encoded_prefix = movement_window_with_new_encoded_pose.join("");
-            // console.log("Encoded prefix: ",encoded_prefix);
             let has_prefix = this.exercise_trie.has(encoded_prefix); //looks at if prefix exists in known
                                                                 //exercises trie.
                                                                 //undefined - the prefix exists
                                                                 //true - the exact word exists
                                                                 //false - the prefix or word doesn't exist
             var previous_pose = this.movement_window[this.movement_window.length - 1];
-            // console.log("has prefix: ",has_prefix);
             if(previous_pose!=encoded_pose) {//a new pose has been detected
                 if(has_prefix==undefined || has_prefix==true) {//pose exists in an exercise
-                    if(this.sameposecounter > 5) {  //makes sure user is not going between poses way too fast
+                    if(this.sameposecounter > this.smoothingbuffer) {//makes sure user is not going between poses way too fast
                                                     //   because of close confidences between two poses
                                                     //  . Simply adds a little buffer to that situation.
                                                     // - A synthetic way of doing smoothing.
@@ -354,7 +348,6 @@ export default class ClassificationUtil{
                 this.framecounter++;
             }
         } else {  //movement window is empty
-            // console.log("pose in exercise? ... : ",has_pose)
             if(has_pose==undefined) {
                 this.movement_window.push(encoded_pose);
             }
@@ -368,10 +361,9 @@ export default class ClassificationUtil{
         var movement_string = this.movement_window.join("");
         var max_distance = 1;
         var results = this.exercise_trie.find(movement_string,max_distance);
-        for(var prefix in results) { //look at each possible exercise from the current movement
-                                 //window.
+        for(var prefix in results) {//Look at each possible exercise from the current movement window.
             const distance = results[prefix];
-            if(distance == 0) { //movement window is a known exercise
+            if(distance == 0) {     //movement window is a known exercise
                 const classified_exercise_name = this.exercise_map[prefix];
                 this.classified_exercise = classified_exercise_name;      //Save this classified exercise to
                                                                           //the state variable to keep track

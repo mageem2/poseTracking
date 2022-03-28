@@ -1,4 +1,3 @@
 {
-   "tree-to-warrior" : ["tree","warrior "],
-   "tree-to-t" : ["tree","t_pose"] 
+   "pushup" : ["pushup down","pushup up"]
 }

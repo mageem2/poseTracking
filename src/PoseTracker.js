@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform, Button } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity } from 'react-native';
 
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
@@ -74,6 +74,7 @@ export default function PoseTracker (
   const [modelClasses, setModelClasses] = useState(null);
   const [poseMap, setPoseMap] = useState(null);
   const [exerciseMap, setExerciseMap] = useState(null);
+  const [poseName, setPoseName] = useState(null);
 
   
   useEffect(() => {
@@ -151,6 +152,8 @@ export default function PoseTracker (
       if(poses.length>0) {
 
         const [poseName, confidence] = await classificationUtil.classifyPose(poses);
+        
+        setPoseName(poseName)
         const classified_poses = await classificationUtil.classifyPoses(poses);
         if(poseName && confidence) {
           //console.log(classified_poses);
@@ -328,55 +331,85 @@ export default function PoseTracker (
           onReady={handleCameraStream}
         />
         {/* TODO prop */}
-        <Button
+        <TouchableOpacity
+          style={styles.switch}
           onPress={cameraTypeHandler}
-          title="Switch"/>
+        ><Text style={{color:"white"}}>Switch</Text>
+        </TouchableOpacity>
         {renderPose()}
+        <Text style={styles.poseName}>{poseName}</Text>
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  containerPortrait: {
-    position: 'relative',
-    width: CAM_PREVIEW_WIDTH,
-    height: CAM_PREVIEW_HEIGHT,
-    marginTop: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
-  },
-  containerLandscape: {
-    position: 'relative',
-    width: CAM_PREVIEW_HEIGHT,
-    height: CAM_PREVIEW_WIDTH,
-    marginLeft: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
-  },
-  loadingMsg: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  camera: {
-    width: '100%',
-    height: '100%',
-    zIndex: 1,
-  },
-  svg: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-    zIndex: 30,
-  },
-  fpsContainer: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    width: 80,
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, .7)',
-    borderRadius: 2,
-    padding: 8,
-    zIndex: 20,
-  },
+    containerPortrait: {
+      position: 'relative',
+      width: CAM_PREVIEW_WIDTH,
+      height: CAM_PREVIEW_HEIGHT,
+      marginTop: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
+    },
+    containerLandscape: {
+      position: 'relative',
+      width: CAM_PREVIEW_HEIGHT,
+      height: CAM_PREVIEW_WIDTH,
+      marginLeft: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
+    },
+    loadingMsg: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    camera: {
+      width: '100%',
+      height: '100%',
+      zIndex: 1,
+    },
+    svg: {
+      width: '100%',
+      height: '100%',
+      position: 'absolute',
+      zIndex: 30,
+    },
+    fpsContainer: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      width: 80,
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, .7)',
+      borderRadius: 2,
+      padding: 8,
+      zIndex: 20,
+    },
+    switch: {
+      position: 'absolute',
+      bottom: 20,
+      left: 10,
+      width: 80,
+      backgroundColor: '#f194ff',
+      alignItems: 'center',
+      borderRadius: 2,
+      padding: 8,
+      zIndex: 20,
+    },
+    dataStatus: {
+      fontSize: 30,
+    }, 
+    input: {
+      height: 30,
+    },
+    poseName: {
+      position: 'relative',
+      backgroundColor: 'white',
+      alignItems: 'center',
+      color: '#f194ff',
+      zIndex: 20,
+      fontSize: 40,
+      marginTop: 15,
+      marginLeft: 20,
+    }
 });

@@ -291,10 +291,12 @@ export default class ClassificationUtil {
     // to the movement window to be used with
     // exercise classification
     async trackMovement() {
+
+        //empties the exercise tracker
+        //if the user has been doing the same
+        //pose for too long (20 frames)
         if (this.framecounter > this.resetlimit) {
-            this.movement_window = []; //empties the exercise tracker
-            //if the user has been doing the same
-            //pose for too long (20 frames)
+            this.movement_window = [];
             this.framecounter = 0; //resets framecount
         }
         try {  //makes sure a pose has been classified
@@ -313,18 +315,23 @@ export default class ClassificationUtil {
             temp_window.push(encoded_pose);
             let movement_window_with_new_encoded_pose = temp_window;
             let encoded_prefix = movement_window_with_new_encoded_pose.join("");
-            let has_prefix = this.exercise_trie.has(encoded_prefix); //looks at if prefix exists in known
+
+            //looks at if prefix exists in known
             //exercises trie.
             //undefined - the prefix exists
             //true - the exact word exists
             //false - the prefix or word doesn't exist
+            let has_prefix = this.exercise_trie.has(encoded_prefix);
+
             var previous_pose = this.movement_window[this.movement_window.length - 1];
             if (previous_pose != encoded_pose) {//a new pose has been detected
                 if (has_prefix == undefined || has_prefix == true) {//pose exists in an exercise
-                    if (this.sameposecounter > this.smoothingbuffer) {//makes sure user is not going between poses way too fast
-                        //   because of close confidences between two poses
-                        //  . Simply adds a little buffer to that situation.
-                        // - A synthetic way of doing smoothing.
+
+                    //makes sure user is not going between poses way too fast
+                    //   because of close confidences between two poses
+                    //  . Simply adds a little buffer to that situation.
+                    // - A synthetic way of doing smoothing.
+                    if (this.sameposecounter > this.smoothingbuffer) {
                         this.movement_window.push(encoded_pose);
                         this.sameposecounter = 0;
                         this.framecounter = 0;
@@ -348,6 +355,9 @@ export default class ClassificationUtil {
         console.log("Movement Window: ", this.movement_window);
     }
 
+    //'classifyExercise'
+    //-processes the movement window.
+    //-when an exercise 
     async classifyExercise() {
         if (!this.movement_window) { return; }
         var movement_string = this.movement_window.join("");
@@ -357,12 +367,17 @@ export default class ClassificationUtil {
             const distance = results[prefix];
             if (distance == 0) {     //movement window is a known exercise
                 const classified_exercise_name = this.exercise_map[prefix];
-                this.classified_exercise = classified_exercise_name;      //Save this classified exercise to
-                //the state variable to keep track
-                //of the most recent exercise.
-                this.classified_exercises[classified_exercise_name] += 1; //Add a rep to classifed exercise
+
+                // Save this classified exercise to
+                // the state variable to keep track
+                // of the most recent exercise.
+                this.classified_exercise = classified_exercise_name;
+
+                //Add a rep to classifed exercise
                 //to classified exercise object.
                 //This allows for rep tracking.
+                this.classified_exercises[classified_exercise_name] += 1;
+
                 this.movement_window = [];  //empties current movement window
             }
         }

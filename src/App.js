@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {Component} from 'react';
 import { inlineStyles } from 'react-native-svg';
-import {PoseTracker} from './Camera';
+import {PoseTracker} from './PoseTracker';
 
 function HomeScreen({ navigation }) {
   return (
@@ -96,7 +96,7 @@ export default function App() {
       }}>
         <Stack.Screen name="Home" component={HomeScreen} options={{title: 'Pose Tracker'}}/>
         {/* <Stack.Screen name="CamaraT" component={CamaraT} /> */}
-        <Stack.Screen name="CameraS" getComponent={() => require('./Camera').default} options={{title: 'Camera Tracker'}}/>
+        <Stack.Screen name="CameraS" getComponent={() => require('./PoseTracker').default} options={{title: 'Camera Tracker'}}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

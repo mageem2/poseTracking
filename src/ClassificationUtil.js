@@ -1,8 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
-import { fetch, asyncStorageIO, bundleResourceIO, decodeJpeg } from '@tensorflow/tfjs-react-native';
-import { and } from 'react-native-reanimated';
-import { encode } from 'punycode';
+import { bundleResourceIO } from '@tensorflow/tfjs-react-native';
 export default class ClassificationUtil {
 
     //Sets up stats hooks for the classificatiion util class
@@ -47,10 +44,9 @@ export default class ClassificationUtil {
             this.model = await tf.loadLayersModel(model_url);
             this.model_classes = require('./assets/classes.json');
             console.log("Loaded Tensor Server Model");
-
-            //If server-based doesn't work, then load the statically bundled model
-            //from within the source code
         }
+        //If server-based doesn't work, then load the statically bundled model
+        //from within the source code
         catch {
             const modelJSON = require('./assets/model.json');
             const modelWeights = require('./assets/group1-shard1of1.bin');
@@ -156,14 +152,6 @@ export default class ClassificationUtil {
         }
         console.log("Classified Exercises: ", this.classified_exercises);
         //---------------------END------------------------------
-        //Create Exercise Encoding Map
-        //------------------------------------------------------
-        // this.exercise_encoding_map={};
-        // for (var exercise in this.exercise_map) {
-        //     this.exercise_encoding_map[this.exercise_map[exercise]]= exercise;
-        // }
-        // console.log("Exercise Encoding Map: ",this.classified_exercises);
-        //---------------------END------------------------------
 
         return [this.model, this.model_classes, this.pose_map, this.exercise_map]
     }
@@ -183,6 +171,8 @@ export default class ClassificationUtil {
             this.classified_pose = poseName;  //utilized with movement tracking / exercise classification
 
             return [poseName, confidence];
+            //Classified Pose Array:
+            // ["confidence": -0.2243289351463318, "poseName": "tree"]
         }
     }
 
@@ -238,6 +228,8 @@ export default class ClassificationUtil {
         const confidence = topKValues[0];
 
         return [poseName, confidence];
+        //Classified Pose Array:
+        // ["confidence": -0.2243289351463318, "poseName": "tree"]
     }
 
     // 'getClassifiedPoses' returns the PoseObject

@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button } from 'react-native';
-
+import { StyleSheet, Text, View, Dimensions, Platform, Button } from 'react-native';
 
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
+import { cameraWithTensors, bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
-// import { ExpoWebGLRenderingContext } from 'expo-gl';
+
+import ClassificationUtil from './ClassificationUtil.js';
 
 // tslint:disable-next-line: variable-name
 const TensorCamera = cameraWithTensors(Camera);
@@ -38,19 +38,44 @@ const OUTPUT_TENSOR_WIDTH = 180;
 const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // Whether to auto-render TensorCamera preview.
-const AUTO_RENDER = false;
+// AUTO_RENDER == true
+//    - this will make it so that the camera preview
+//      is dynamically rendered.  This is recommended
+//      for almost all applications.
+//    - This means the camera preview will render
+//      regardless of the awaits inside the loop
+const AUTO_RENDER = true;
 
-export default function CameraJ() {
+export default function PoseTracker (
+  { 
+    //Setting Default parameters for components
+    modelUrl='', 
+    showFps=true, 
+    renderKeypoints=true,
+    estimationModelType='full',
+    cameraState='front',
+    estimationThreshold='0.5'
+  } 
+) {
+  //State variables to be used throughout the PoseTracker Component
+  // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
   const cameraRef = useRef(null);
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);
   const [poses, setPoses] = useState(null);
-  const [fps, setFps] = useState(0);
-  const [orientation, setOrientation] =
-    useState(ScreenOrientation.Orientation);
+  const [estimationFps, setEstimationFps] = useState(0);
+  const [classificationFps, setClassificationFps] = useState(0);
+  const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
+  const [classifiedPoses, setClassifiedPoses] = useState(null);
+  const [classifiedPose, setClassifiedPose] = useState(null);
+  const [classificationUtil, setClassificationUtil] = useState(null);
+  //const [classificationModel, setClassificationModel] = useState(null);
+  const [modelClasses, setModelClasses] = useState(null);
+  const [poseMap, setPoseMap] = useState(null);
+  const [exerciseMap, setExerciseMap] = useState(null);
 
-
+  
   useEffect(() => {
     async function prepare() {
       // Set initial orientation.
@@ -79,6 +104,26 @@ export default function CameraJ() {
       );
       setDetector(detector);
 
+      //Load Classification Model and Other Related Assets
+
+      //For information on serving a model from your own server
+      // - Serving from your own server can make it so the app doesn't need to have a full update
+      //   to add exercises and/or poses to the library
+      // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
+
+
+      const classificationUtil = new ClassificationUtil();
+      setClassificationUtil(classificationUtil);
+      
+      //model, label, and the associated hooks can be used to modify app (if needed)
+      const {model, labels, pose_map, exercise_map} = await classificationUtil.loadClassification(modelUrl);
+      if (model) {
+        setClassificationModel(model);
+        setModelClasses(labels);
+        setPoseMap(pose_map);
+        setExerciseMap(exercise_map);
+      }
+
       // Ready!
       setTfReady(true);
     }
@@ -98,8 +143,24 @@ export default function CameraJ() {
       const timestamp = performance.now();
       const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
       const latency = performance.now() - timestamp;
-      setFps(Math.floor(1000 / latency));
+      setEstimationFps(Math.floor(1000 / latency));
       setPoses(poses);
+
+      // Pose Classification
+      // TODO:// prop for confidence threshold
+      if(poses.length>0) {
+
+        const [poseName, confidence] = await classificationUtil.classifyPose(poses);
+        const classified_poses = await classificationUtil.classifyPoses(poses);
+        if(poseName && confidence) {
+          //console.log(classified_poses);
+          classificationUtil.trackMovement();
+          classificationUtil.classifyExercise();
+        }
+
+      }
+      
+      
       tf.dispose([image]);
 
       // Render camera preview manually when autorender=false.
@@ -115,7 +176,7 @@ export default function CameraJ() {
   };
 
   const renderPose = () => {
-    if (poses != null && poses.length > 0) {
+    if (poses != null && poses.length > 0 && renderKeypoints==true) {
       const keypoints = poses[0].keypoints
         .filter((k) => (k.score ?? 0) > MIN_KEYPOINT_SCORE)
         .map((k) => {
@@ -182,15 +243,6 @@ export default function CameraJ() {
     }
   };
 
-
-  const renderFps = () => {
-    return (
-      <View style={styles.fpsContainer}>
-        <Text>FPS: {fps}</Text>
-      </View>
-    );
-  };
-
   const isPortrait = () => {
     return (
       orientation === ScreenOrientation.Orientation.PORTRAIT_UP ||
@@ -238,6 +290,7 @@ export default function CameraJ() {
     }
   };
 
+  //TODO prop
   if (!tfReady) {
     return (
       <View style={styles.loadingMsg}>
@@ -267,7 +320,6 @@ export default function CameraJ() {
           style={styles.camera}
           type={cameraType}
           autorender={AUTO_RENDER}
-          type={cameraType}
           // tensor related props
           resizeWidth={getOutputTensorWidth()}
           resizeHeight={getOutputTensorHeight()}
@@ -275,11 +327,11 @@ export default function CameraJ() {
           rotation={getTextureRotationAngleInDegrees()}
           onReady={handleCameraStream}
         />
+        {/* TODO prop */}
         <Button
           onPress={cameraTypeHandler}
           title="Switch"/>
         {renderPose()}
-        {renderFps()}
       </View>
     );
   }

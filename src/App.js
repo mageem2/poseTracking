@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import {Component} from 'react';
 import { inlineStyles } from 'react-native-svg';
-import {CameraJ} from './Camera';
+import {PoseTracker} from './Camera';
 
 function HomeScreen({ navigation }) {
   return (

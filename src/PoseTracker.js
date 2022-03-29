@@ -23,7 +23,7 @@ const IS_IOS = Platform.OS === 'ios';
 // devices.
 //
 // This might not cover all cases.
-const CAM_PREVIEW_WIDTH = Dimensions.get('window').width;
+const CAM_PREVIEW_WIDTH = Dimensions.get('window').width/1.25;
 const CAM_PREVIEW_HEIGHT = CAM_PREVIEW_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // The score threshold for pose detection results.
@@ -75,6 +75,8 @@ export default function PoseTracker (
   const [poseMap, setPoseMap] = useState(null);
   const [exerciseMap, setExerciseMap] = useState(null);
   const [poseName, setPoseName] = useState(null);
+  const [exerciseName, setExerciseName] = useState(null);
+  const [exerciseList, setExerciseList] = useState(null);
 
   
   useEffect(() => {
@@ -159,6 +161,11 @@ export default function PoseTracker (
           //console.log(classified_poses);
           classificationUtil.trackMovement();
           classificationUtil.classifyExercise();
+          const [exerciseName, exerciseList] = classificationUtil.getClassifiedExercises()
+          
+          setExerciseName(exerciseName)
+          setExerciseList(exerciseList)
+          //console.log(exerciseName["pushup"])
         }
 
       }
@@ -177,6 +184,23 @@ export default function PoseTracker (
 
     loop();
   };
+
+  const renderExercise = () =>{
+    if(exerciseName!=null){
+      // const exerciseRows = []
+      // const exercisesObject = Object.entries(exerciseName)
+      // //console.log(exercisesObject[0][1])
+      // for(let i=0;i<exercisesObject.length;i++){
+      //   if(exercisesObject[i][1]!=0){
+      //     exerciseRows.push(<Text style={styles.poseName}>{exercisesObject[i][0]}: {exercisesObject[i][1]}</Text>)
+      //   }
+      // }
+      // // return (<View>
+      // //   {exerciseRows}
+      // //   </View>)
+      return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
+    }
+  }
 
   const renderPose = () => {
     if (poses != null && poses.length > 0 && renderKeypoints==true) {
@@ -337,7 +361,9 @@ export default function PoseTracker (
         ><Text style={{color:"white"}}>Switch</Text>
         </TouchableOpacity>
         {renderPose()}
-        <Text style={styles.poseName}>{poseName}</Text>
+        {renderExercise()}
+        {/*<Text style={styles.poseName}>{poseName}</Text>*/}
+        {/* <Text style={styles.poseName}>{exerciseName}</Text> */}
       </View>
     );
   }
@@ -408,7 +434,7 @@ const styles = StyleSheet.create({
       alignItems: 'center',
       color: '#f194ff',
       zIndex: 20,
-      fontSize: 40,
+      fontSize: 20,
       marginTop: 15,
       marginLeft: 20,
     }

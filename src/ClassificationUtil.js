@@ -57,11 +57,11 @@ export default class ClassificationUtil{
             const model_classes = require('./assets/classes.json');
             this.model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights));
             this.model_classes = model_classes;
-            console.log("Loaded Static Model");
+            //console.log("Loaded Static Model");
         }
 
-        console.log(this.model);
-        console.log("Known Poses: ",this.model_classes);
+        //console.log(this.model);
+        //console.log("Known Poses: ",this.model_classes);
         
         //Create UTF-16 Encoded Pose Map 
         //------------------------------------------------------
@@ -110,7 +110,7 @@ export default class ClassificationUtil{
                 i--;
             }
         }
-        console.log("Pose Map: ",this.pose_map);
+        //console.log("Pose Map: ",this.pose_map);
 
         //---------------------END------------------------------
 
@@ -129,7 +129,7 @@ export default class ClassificationUtil{
             }
             this.exercise_map[encoded_exercise_string] = exercise;
         }
-        console.log("Exercise Map: ",this.exercise_map);
+        //console.log("Exercise Map: ",this.exercise_map);
 
         //---------------------END------------------------------
 
@@ -141,7 +141,7 @@ export default class ClassificationUtil{
         for (var exercise in exercises_) {
             trie.add(exercise);
         }
-        console.log("Exercise Trie: ", trie.all());
+        //.log("Exercise Trie: ", trie.all());
         this.exercise_trie = trie;
         //---------------------END------------------------------
 
@@ -154,7 +154,7 @@ export default class ClassificationUtil{
             var exercise_name = this.exercise_map[exercise];
             this.classified_exercises[exercise_name]=0;
         }
-        console.log("Classified Exercises: ",this.classified_exercises);
+        //console.log("Classified Exercises: ",this.classified_exercises);
         //---------------------END------------------------------
         //Create Exercise Encoding Map
         //------------------------------------------------------
@@ -353,7 +353,7 @@ export default class ClassificationUtil{
             }
             this.framecounter++;
         }
-        console.log("Movement Window: ",this.movement_window);
+        //console.log("Movement Window: ",this.movement_window);
     }
 
     async classifyExercise () {
@@ -375,9 +375,12 @@ export default class ClassificationUtil{
             }
         }
         //console.log("Trie search: ",results);
-        console.log("Classified Exercises: ", this.classified_exercises);
+        //console.log("Classified Exercises: ", this.classified_exercises);
     }
 
+    getClassifiedExercises(){
+        return [this.classified_exercise,this.classified_exercises];
+    }
     // 'formatArray' takes a 2d array of 33 pose keypoints/landmarks
     // and converts it to 99 separate points of data by separating
     // the x, y, and z points of data.  (33*3=99)

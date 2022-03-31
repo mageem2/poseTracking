@@ -3,7 +3,7 @@
 ### Clone repo
 git clone https://github.com/mageem2/poseTracking.git
 
-##### Navigate to the motioncapture project then run:
+### Navigate to the motioncapture project then run:
 npm install
 
 ## Extra Libraries that need to be installed in vm
@@ -20,6 +20,8 @@ npm install
 expo start
 
 switch connection from default LAN to tunnel
+
 scan QR code
+
 wait till app loads
 

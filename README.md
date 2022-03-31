@@ -1,10 +1,11 @@
 # Setup
 
 ### Clone repo
-<code>git clone https://github.com/mageem2/poseTracking.git<code>
+<code>git clone https://github.com/mageem2/poseTracking.git</code>
 
+  
 ### Navigate to the motioncapture project then run:
-<code>npm install<code>
+<code>npm install</code>
 
 ## Extra Libraries that need to be installed in vm
 
@@ -17,7 +18,7 @@
 - npm install -g @expo/ngrok@4.1.0
 
 ### Run app
-<code>expo start<code>
+<code>expo start</code>
 
 switch connection from default LAN to tunnel
 

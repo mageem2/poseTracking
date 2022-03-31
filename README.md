@@ -1,6 +1,6 @@
 # Setup
 
-# Clone repo
+### Clone repo
 git clone https://github.com/mageem2/poseTracking.git
 
 ##### Navigate to the motioncapture project then run:
@@ -16,7 +16,7 @@ npm install
 - npm install react-native-svg
 - npm install -g @expo/ngrok@4.1.0
 
-# Run app
+### Run app
 expo start
 
 switch connection from default LAN to tunnel

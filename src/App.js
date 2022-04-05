@@ -48,7 +48,7 @@ function HomeScreen({ navigation }) {
         </TouchableOpacity>
         
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
-          <Text style={styles.boxContent}>Push Ups</Text>
+          <Text style={styles.boxContent}>Pose 8 (NOT HERE YET</Text>
         </TouchableOpacity>
       </View>
 

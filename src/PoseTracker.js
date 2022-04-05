@@ -187,19 +187,12 @@ export default function PoseTracker (
 
   const renderExercise = () =>{
     if(exerciseName!=null){
-      // const exerciseRows = []
-      // const exercisesObject = Object.entries(exerciseName)
-      // //console.log(exercisesObject[0][1])
-      // for(let i=0;i<exercisesObject.length;i++){
-      //   if(exercisesObject[i][1]!=0){
-      //     exerciseRows.push(<Text style={styles.poseName}>{exercisesObject[i][0]}: {exercisesObject[i][1]}</Text>)
-      //   }
-      // }
-      // // return (<View>
-      // //   {exerciseRows}
-      // //   </View>)
       return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
     }
+  }
+  
+  const renderPoseName = () => {
+    return <View><Text style={styles.poseName}>{poseName}</Text></View>
   }
 
   const renderPose = () => {
@@ -362,8 +355,7 @@ export default function PoseTracker (
         </TouchableOpacity>
         {renderPose()}
         {renderExercise()}
-        {/*<Text style={styles.poseName}>{poseName}</Text>*/}
-        {/* <Text style={styles.poseName}>{exerciseName}</Text> */}
+        {renderPoseName()}
       </View>
     );
   }

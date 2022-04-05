@@ -1,16 +1,15 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform, Button } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button,TextInput } from 'react-native';
 
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { cameraWithTensors, bundleResourceIO } from '@tensorflow/tfjs-react-native';
+import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
+import FormData from 'form-data';
+import ModelService from './ModelService.js'
 
-import ClassificationUtil from './ClassificationUtil.js';
-
-// tslint:disable-next-line: variable-name
 const TensorCamera = cameraWithTensors(Camera);
 
 const IS_ANDROID = Platform.OS === 'android';
@@ -23,7 +22,7 @@ const IS_IOS = Platform.OS === 'ios';
 // devices.
 //
 // This might not cover all cases.
-const CAM_PREVIEW_WIDTH = Dimensions.get('window').width;
+const CAM_PREVIEW_WIDTH = Dimensions.get('window').width /1.25;
 const CAM_PREVIEW_HEIGHT = CAM_PREVIEW_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // The score threshold for pose detection results.
@@ -38,44 +37,23 @@ const OUTPUT_TENSOR_WIDTH = 180;
 const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // Whether to auto-render TensorCamera preview.
-// AUTO_RENDER == true
-//    - this will make it so that the camera preview
-//      is dynamically rendered.  This is recommended
-//      for almost all applications.
-//    - This means the camera preview will render
-//      regardless of the awaits inside the loop
 const AUTO_RENDER = true;
 
-export default function PoseTracker (
-  { 
-    //Setting Default parameters for components
-    modelUrl='', 
-    showFps=true, 
-    renderKeypoints=true,
-    estimationModelType='full',
-    cameraState='front',
-    estimationThreshold='0.5'
-  } 
-) {
-  //State variables to be used throughout the PoseTracker Component
-  // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
+export default function App() {
   const cameraRef = useRef(null);
+  const [currentPoseName, setCurrentPoseName] = useState('');
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);
+  //const [model, setModel] = useState(null);
   const [poses, setPoses] = useState(null);
-  const [estimationFps, setEstimationFps] = useState(0);
-  const [classificationFps, setClassificationFps] = useState(0);
-  const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
+  const [fps, setFps] = useState(0);
+  const [orientation, setOrientation] =
+    useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  const [classifiedPoses, setClassifiedPoses] = useState(null);
-  const [classifiedPose, setClassifiedPose] = useState(null);
-  const [classificationUtil, setClassificationUtil] = useState(null);
-  //const [classificationModel, setClassificationModel] = useState(null);
-  const [modelClasses, setModelClasses] = useState(null);
-  const [poseMap, setPoseMap] = useState(null);
-  const [exerciseMap, setExerciseMap] = useState(null);
+  const [modelService, setModelService] = useState(null);
+  const [poseName, setPoseName] = useState(null);
 
-  
+
   useEffect(() => {
     async function prepare() {
       // Set initial orientation.
@@ -93,6 +71,11 @@ export default function PoseTracker (
       // Wait for tfjs to initialize the backend.
       await tf.ready();
 
+      //load model
+      const modelService = new ModelService();
+      setModelService(modelService)
+      const model = await modelService.create()
+
       // Load Blazepose model.
       const detector = await poseDetection.createDetector(
         poseDetection.SupportedModels.BlazePose,
@@ -103,27 +86,7 @@ export default function PoseTracker (
         }
       );
       setDetector(detector);
-
-      //Load Classification Model and Other Related Assets
-
-      //For information on serving a model from your own server
-      // - Serving from your own server can make it so the app doesn't need to have a full update
-      //   to add exercises and/or poses to the library
-      // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
-
-
-      const classificationUtil = new ClassificationUtil();
-      setClassificationUtil(classificationUtil);
-      
-      //model, label, and the associated hooks can be used to modify app (if needed)
-      const {model, labels, pose_map, exercise_map} = await classificationUtil.loadClassification(modelUrl);
-      if (model) {
-        setClassificationModel(model);
-        setModelClasses(labels);
-        setPoseMap(pose_map);
-        setExerciseMap(exercise_map);
-      }
-
+      //setModel(model);
       // Ready!
       setTfReady(true);
     }
@@ -143,23 +106,16 @@ export default function PoseTracker (
       const timestamp = performance.now();
       const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
       const latency = performance.now() - timestamp;
-      setEstimationFps(Math.floor(1000 / latency));
-      setPoses(poses);
-
-      // Pose Classification
-      // TODO:// prop for confidence threshold
-      if(poses.length>0) {
-
-        const [poseName, confidence] = await classificationUtil.classifyPose(poses);
-        const classified_poses = await classificationUtil.classifyPoses(poses);
-        if(poseName && confidence) {
-          //console.log(classified_poses);
-          classificationUtil.trackMovement();
-          classificationUtil.classifyExercise();
-        }
-
-      }
+      const numFrames = 300;
+      setFps(Math.floor(1000 / latency));
+      setPoses(poses)
       
+      if(poses.length>0){
+        //call classify pose to get prediction
+        const poseName = await modelService.classifyPose(poses)
+        setPoseName(poseName)
+        //console.log("Prediction response", predictionResponse)
+      }
       
       tf.dispose([image]);
 
@@ -176,7 +132,7 @@ export default function PoseTracker (
   };
 
   const renderPose = () => {
-    if (poses != null && poses.length > 0 && renderKeypoints==true) {
+    if (poses != null && poses.length > 0) {
       const keypoints = poses[0].keypoints
         .filter((k) => (k.score ?? 0) > MIN_KEYPOINT_SCORE)
         .map((k) => {
@@ -242,6 +198,15 @@ export default function PoseTracker (
       return <View></View>;
     }
   };
+ 
+
+  const renderFps = () => {
+    return (
+      <View style={styles.fpsContainer}>
+        <Text>FPS: {fps}</Text>
+      </View>
+    );
+  };
 
   const isPortrait = () => {
     return (
@@ -290,7 +255,6 @@ export default function PoseTracker (
     }
   };
 
-  //TODO prop
   if (!tfReady) {
     return (
       <View style={styles.loadingMsg}>
@@ -327,11 +291,14 @@ export default function PoseTracker (
           rotation={getTextureRotationAngleInDegrees()}
           onReady={handleCameraStream}
         />
-        {/* TODO prop */}
-        <Button
+        <TouchableOpacity
+          style={styles.switch}
           onPress={cameraTypeHandler}
-          title="Switch"/>
+        ><Text style={{color:"white"}}>Switch</Text>
+        </TouchableOpacity>
         {renderPose()}
+        {renderFps()}
+        <Text style={styles.poseName}>{poseName}</Text>
       </View>
     );
   }
@@ -379,4 +346,31 @@ const styles = StyleSheet.create({
     padding: 8,
     zIndex: 20,
   },
+  switch: {
+    position: 'absolute',
+    bottom: 20,
+    left: 10,
+    width: 80,
+    backgroundColor: '#f194ff',
+    alignItems: 'center',
+    borderRadius: 2,
+    padding: 8,
+    zIndex: 20,
+  },
+  dataStatus: {
+    fontSize: 30,
+  }, 
+  input: {
+    height: 30,
+  },
+  poseName: {
+    position: 'relative',
+    backgroundColor: 'white',
+    alignItems: 'center',
+    color: '#f194ff',
+    zIndex: 20,
+    fontSize: 40,
+    marginTop: 15,
+    marginLeft: 20,
+  }
 });

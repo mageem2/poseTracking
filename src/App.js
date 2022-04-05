@@ -8,9 +8,10 @@ import {PoseTracker} from './PoseTracker';
 
 function HomeScreen({ navigation }) {
   return (
-    <View style={styles.main}>
+    <View>
+      <Text style={styles.main}>Choose a Pose</Text>
+      <Text> </Text>
       <ScrollView style={styles.scrollView}>
-      <Text style={{fontSize: 30,}}>Choose a Pose</Text>
       <View style={styles.row}>
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
           <Text style={styles.boxContent}>Tree pose</Text>
@@ -33,29 +34,29 @@ function HomeScreen({ navigation }) {
 
       <View style={styles.row}>
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
-          <Text style={styles.boxContent}>Pose 5 (NOT HERE YET)</Text>
+          <Text style={styles.boxContent}>Triangle pose</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
-          <Text style={styles.boxContent}>Pose 6 (NOT HERE YET)</Text>
+          <Text style={styles.boxContent}>Garland Pose</Text>
         </TouchableOpacity>
       </View>
-
 
       <View style={styles.row}>
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
-          <Text style={styles.boxContent}>Pose 7 (NOT HERE YET)</Text>
+          <Text style={styles.boxContent}>Lotus pose</Text>
         </TouchableOpacity>
         
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
-          <Text style={styles.boxContent}>Pose 8 (NOT HERE YET)</Text>
+          <Text style={styles.boxContent}>Push Ups</Text>
         </TouchableOpacity>
       </View>
+
       <View style={styles.row}>
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
           <Text style={styles.boxContent}>Pose 9 (NOT HERE YET)</Text>
         </TouchableOpacity>
-        
+
         <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS')} >
           <Text style={styles.boxContent}>Pose 10 (NOT HERE YET)</Text>
         </TouchableOpacity>
@@ -95,7 +96,6 @@ export default function App() {
         },
       }}>
         <Stack.Screen name="Home" component={HomeScreen} options={{title: 'Pose Tracker'}}/>
-        {/* <Stack.Screen name="CamaraT" component={CamaraT} /> */}
         <Stack.Screen name="CameraS" getComponent={() => require('./PoseTracker').default} options={{title: 'Camera Tracker'}}/>
       </Stack.Navigator>
     </NavigationContainer>
@@ -117,12 +117,6 @@ const styles = StyleSheet.create({
     width: '30%',
     borderRadius:20,
     backgroundColor : "#2832C2",
-  },
-
-  scrollView: {
-    flex: 1,
-    backgroundColor: 'pink',
-    marginHorizontal: 5,
   },
 
   head:{

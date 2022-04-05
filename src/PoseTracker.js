@@ -44,7 +44,6 @@ const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 //      for almost all applications.
 //    - This means the camera preview will render
 //      regardless of the awaits inside the loop
-const AUTO_RENDER = true;
 
 export default function PoseTracker(
   {
@@ -54,9 +53,11 @@ export default function PoseTracker(
     renderKeypoints = true,
     estimationModelType = 'full',
     cameraState = 'front',
-    estimationThreshold = 0.5,
+    // estimationThreshold = 0.5,
     classificationThreshold = 5,
-    resetExercises = false
+    resetExercises = false,
+    smoothingState = true,
+    autoRender = true
   }
 ) {
   //State variables to be used throughout the PoseTracker Component
@@ -72,7 +73,7 @@ export default function PoseTracker(
   const [classifiedPoses, setClassifiedPoses] = useState(null);
   const [classifiedPose, setClassifiedPose] = useState(null);
   const [classificationUtil, setClassificationUtil] = useState(null);
-  //const [classificationModel, setClassificationModel] = useState(null);
+  const [classificationModel, setClassificationModel] = useState(null);
   const [modelClasses, setModelClasses] = useState(null);
   const [poseMap, setPoseMap] = useState(null);
   const [exerciseMap, setExerciseMap] = useState(null);
@@ -99,8 +100,8 @@ export default function PoseTracker(
       const detector = await poseDetection.createDetector(
         poseDetection.SupportedModels.BlazePose,
         {
-          modelType: 'full',
-          enableSmoothing: true,
+          modelType: estimationModelType,
+          enableSmoothing: smoothingState,
           runtime: 'tfjs'
         }
       );
@@ -141,25 +142,25 @@ export default function PoseTracker(
     const loop = async () => {
       // Get the tensor and run pose detection.
       const image = images.next().value;
-      const estimationConfig = { flipHorizontal: true };
+      const estimationConfig = {
+        flipHorizontal: true
+      };
       const timestamp = performance.now();
       const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
       const latency = performance.now() - timestamp;
       setEstimationFps(Math.floor(1000 / latency));
       setPoses(poses);
 
-      // Pose Classification
-      // TODO:// prop for confidence threshold
-      if (poses.length > 0) {
-
+      // 'Pose Classification and Exercise Classfication'
+      if (poses.length > 0) {  //if poses have been detected
         const [poseName, confidence] = await classificationUtil.classifyPose(poses);
         const classified_poses = await classificationUtil.classifyPoses(poses);
-        if (poseName && confidence) {
-          //console.log(classified_poses);
+        if (poseName && confidence && confidence > classificationThreshold) {
+          setClassifiedPose([poseName, confidence]);
+          setClassifiedPoses(classified_poses);
           classificationUtil.trackMovement();
           classificationUtil.classifyExercise();
         }
-
       }
 
 
@@ -171,14 +172,14 @@ export default function PoseTracker(
         gl.endFrameEXP();
       }
 
-      requestAnimationFrame(loop);
+      requestAnimationFrame(loop); //allows for a UI friendly render loop
     };
 
     loop();
   };
 
   const renderPose = () => {
-    if (poses != null && poses.length > 0 && props.renderKeypoints == true) {
+    if (poses != null && poses.length > 0 && renderKeypoints == true) {
       const keypoints = poses[0].keypoints
         .filter((k) => (k.score ?? 0) > MIN_KEYPOINT_SCORE)
         .map((k) => {
@@ -250,9 +251,13 @@ export default function PoseTracker(
   const renderFps = () => {
     if (showFps) {
       return (
+        <View style={styles.fpsContainer}>
+          <Text>FPS: {fps}</Text>
+        </View>
       );
     } else {
       return (
+        <View></View>
       );
     }
   }
@@ -313,8 +318,16 @@ export default function PoseTracker(
     );
   } else {
 
+    // const cameraTypeHandler = () => {
+    //   if (cameraType === Camera.Constants.Type.back) {
+    //     setCameraType(Camera.Constants.Type.front);
+    //   } else {
+    //     setCameraType(Camera.Constants.Type.back);
+    //   }
+    // };
+
     const cameraTypeHandler = () => {
-      if (cameraType === Camera.Constants.Type.back) {
+      if (cameraState === 'front') {
         setCameraType(Camera.Constants.Type.front);
       } else {
         setCameraType(Camera.Constants.Type.back);
@@ -329,11 +342,12 @@ export default function PoseTracker(
           isPortrait() ? styles.containerPortrait : styles.containerLandscape
         }
       >
+        {renderFps()}
         <TensorCamera
           ref={cameraRef}
           style={styles.camera}
           type={cameraType}
-          autorender={AUTO_RENDER}
+          autorender={autoRender}
           // tensor related props
           resizeWidth={getOutputTensorWidth()}
           resizeHeight={getOutputTensorHeight()}
@@ -341,7 +355,6 @@ export default function PoseTracker(
           rotation={getTextureRotationAngleInDegrees()}
           onReady={handleCameraStream}
         />
-        {/* TODO prop */}
         <Button
           onPress={cameraTypeHandler}
           title="Switch" />

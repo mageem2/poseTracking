@@ -27,6 +27,8 @@ export default class ClassificationUtil {
         this.classified_exercises = null; //object (JSON)
 
         //TODO Fixes or temporary
+        this.classification_threshold = 0;
+        //setClassificationThreshold - use it in PoseTracker
         this.framecounter = 0;
         this.resetlimit = 20;
         this.sameposecounter = 0;

@@ -46,16 +46,18 @@ const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 //      regardless of the awaits inside the loop
 const AUTO_RENDER = true;
 
-export default function PoseTracker (
-  { 
+export default function PoseTracker(
+  {
     //Setting Default parameters for components
-    modelUrl='', 
-    showFps=true, 
-    renderKeypoints=true,
-    estimationModelType='full',
-    cameraState='front',
-    estimationThreshold='0.5'
-  } 
+    modelUrl = '',
+    showFps = true,
+    renderKeypoints = true,
+    estimationModelType = 'full',
+    cameraState = 'front',
+    estimationThreshold = 0.5,
+    classificationThreshold = 5,
+    resetExercises = false
+  }
 ) {
   //State variables to be used throughout the PoseTracker Component
   // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
@@ -75,7 +77,7 @@ export default function PoseTracker (
   const [poseMap, setPoseMap] = useState(null);
   const [exerciseMap, setExerciseMap] = useState(null);
 
-  
+
   useEffect(() => {
     async function prepare() {
       // Set initial orientation.
@@ -114,9 +116,9 @@ export default function PoseTracker (
 
       const classificationUtil = new ClassificationUtil();
       setClassificationUtil(classificationUtil);
-      
+
       //model, label, and the associated hooks can be used to modify app (if needed)
-      const {model, labels, pose_map, exercise_map} = await classificationUtil.loadClassification(modelUrl);
+      const { model, labels, pose_map, exercise_map } = await classificationUtil.loadClassification(modelUrl);
       if (model) {
         setClassificationModel(model);
         setModelClasses(labels);
@@ -139,7 +141,7 @@ export default function PoseTracker (
     const loop = async () => {
       // Get the tensor and run pose detection.
       const image = images.next().value;
-      const estimationConfig = {flipHorizontal: true};
+      const estimationConfig = { flipHorizontal: true };
       const timestamp = performance.now();
       const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
       const latency = performance.now() - timestamp;
@@ -148,19 +150,19 @@ export default function PoseTracker (
 
       // Pose Classification
       // TODO:// prop for confidence threshold
-      if(poses.length>0) {
+      if (poses.length > 0) {
 
         const [poseName, confidence] = await classificationUtil.classifyPose(poses);
         const classified_poses = await classificationUtil.classifyPoses(poses);
-        if(poseName && confidence) {
+        if (poseName && confidence) {
           //console.log(classified_poses);
           classificationUtil.trackMovement();
           classificationUtil.classifyExercise();
         }
 
       }
-      
-      
+
+
       tf.dispose([image]);
 
       // Render camera preview manually when autorender=false.
@@ -176,7 +178,7 @@ export default function PoseTracker (
   };
 
   const renderPose = () => {
-    if (poses != null && poses.length > 0 && renderKeypoints==true) {
+    if (poses != null && poses.length > 0 && props.renderKeypoints == true) {
       const keypoints = poses[0].keypoints
         .filter((k) => (k.score ?? 0) > MIN_KEYPOINT_SCORE)
         .map((k) => {
@@ -189,21 +191,22 @@ export default function PoseTracker (
           let cy =
             (y / getOutputTensorHeight()) *
             (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
-          if(k.score>MIN_KEYPOINT_SCORE){
-          return (
-            <Circle
-              key={`skeletonkp_${k.name}`}
-              cx={cx}
-              cy={cy}
-              r='4'
-              strokeWidth='2'
-              fill='#8B008B'
-              stroke='white'
-            />
-          );}
+          if (k.score > MIN_KEYPOINT_SCORE) {
+            return (
+              <Circle
+                key={`skeletonkp_${k.name}`}
+                cx={cx}
+                cy={cy}
+                r='4'
+                strokeWidth='2'
+                fill='#8B008B'
+                stroke='white'
+              />
+            );
+          }
         });
 
-      const skeleton = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.BlazePose).map(([i, j],index) => {
+      const skeleton = poseDetection.util.getAdjacentPairs(poseDetection.SupportedModels.BlazePose).map(([i, j], index) => {
         const keypoints = poses[0].keypoints;
         const kp1 = keypoints[i];
         const kp2 = keypoints[j];
@@ -213,28 +216,29 @@ export default function PoseTracker (
         const y2 = kp2.y
 
         const cx1 =
-            (x1 / getOutputTensorWidth()) *
-            (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
+          (x1 / getOutputTensorWidth()) *
+          (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
         const cy1 =
-            (y1 / getOutputTensorHeight()) *
-            (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
+          (y1 / getOutputTensorHeight()) *
+          (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
         const cx2 =
-            (x2 / getOutputTensorWidth()) *
-            (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
+          (x2 / getOutputTensorWidth()) *
+          (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
         const cy2 =
-            (y2 / getOutputTensorHeight()) *
-            (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
-        if(kp1.score>MIN_KEYPOINT_SCORE){
-        return (<Line
-          key={`skeletonls_${index}`}
-          x1={cx1}
-          y1={cy1}
-          x2={cx2}
-          y2={cy2}
-          r='4'
-          stroke='red'
-          strokeWidth='1'
-        />);}
+          (y2 / getOutputTensorHeight()) *
+          (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
+        if (kp1.score > MIN_KEYPOINT_SCORE) {
+          return (<Line
+            key={`skeletonls_${index}`}
+            x1={cx1}
+            y1={cy1}
+            x2={cx2}
+            y2={cy2}
+            r='4'
+            stroke='red'
+            strokeWidth='1'
+          />);
+        }
       });
 
       return <Svg style={styles.svg}>{skeleton}{keypoints}</Svg>;
@@ -242,6 +246,16 @@ export default function PoseTracker (
       return <View></View>;
     }
   };
+
+  const renderFps = () => {
+    if (showFps) {
+      return (
+      );
+    } else {
+      return (
+      );
+    }
+  }
 
   const isPortrait = () => {
     return (
@@ -300,9 +314,9 @@ export default function PoseTracker (
   } else {
 
     const cameraTypeHandler = () => {
-      if(cameraType === Camera.Constants.Type.back){
+      if (cameraType === Camera.Constants.Type.back) {
         setCameraType(Camera.Constants.Type.front);
-      }else{
+      } else {
         setCameraType(Camera.Constants.Type.back);
       }
     };
@@ -330,7 +344,7 @@ export default function PoseTracker (
         {/* TODO prop */}
         <Button
           onPress={cameraTypeHandler}
-          title="Switch"/>
+          title="Switch" />
         {renderPose()}
       </View>
     );

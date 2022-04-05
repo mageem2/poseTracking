@@ -3,10 +3,18 @@ import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button 
 import PoseTracker from "./PoseTracker";
 
 export default function App() {
-    return (
-      <View>
-        <PoseTracker/>
-      </View>
-    );
+  return (
+    <View>
+      <PoseTracker
+        modelUrl={''}
+        showFps={true}
+        renderKeypoints={true}
+        estimationModelType={"full"}
+        cameraState={'front'}
+        estimationThreshold={0.5}
+        classificationThreshold={5}
+        resetExercises={false}
+      />
+    </View>
+  );
 }
-  

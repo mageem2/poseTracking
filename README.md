@@ -24,6 +24,8 @@
 
 ![Tunnel IMG](./images/tunnel_example.png) 
 
+<img src = "./images/tunnel_example.png" width=100 height=100>
+
 - scan QR code
 
 

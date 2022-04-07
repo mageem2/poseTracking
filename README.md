@@ -1,17 +1,24 @@
 # Setup
 
+## For Windows:
+
 ### Clone repo
 <code>git clone https://github.com/mageem2/poseTracking.git</code>
 
   
-### Navigate to the motioncapture project then run:
-<code>npm install --legacy-peer-deps</code>
-<code>npm install --global expo-cli</code>
-<code>npm install fuzzytrie</code>
-<code>npm install -g @expo/ngrok@4.1.0</code>
+### Navigate to the 'poseTracking' project then run:
+<code>npm install</code>
 
 ### Run app
 <code>expo start</code>
+
+- If there is an issue with running expo, namely something to do with the digital signature being unreadable, run:
+
+  - <code>Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted</code>
+
+- Select either 'Yes' or 'Yes to All', and re-run the app.
+
+### After the App is running
 
 switch connection from default LAN to tunnel
 

@@ -1,6 +1,6 @@
 # Setup
 
-## Before setting up on your computer, you will need to download the Expo Go app on your phone.
+#### Note: Before setting up on your computer, you will need to download the Expo Go app on your phone.
 
 ## For Windows:
 

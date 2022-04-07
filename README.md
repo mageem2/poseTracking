@@ -1,5 +1,5 @@
-# Setup
-##For Windown
+# **Setup**
+##**For Windows**
 ##Open Powershell
 
 ### Clone repo

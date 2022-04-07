@@ -20,11 +20,17 @@
 
 - Select either 'Yes' or 'Yes to All', and re-run the app.
 
-### After Code is Executed
-
-#### A web page will pop up. From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download. The tunnel option will need to be selected for the app to run.
+#### After the expo start command is ran, web page will open up. From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download. The tunnel option will need to be selected every time the app is ran.
 
 <img src = "./images/tunnel_example.png" width=256 height=537>
+
+#### Scan the QR code (A unique code will be generated every time the app is ran)
+
+- For Android:
+  - Open the Expo Go App and select "Scan QR Code".
+
+- For iOS:
+  - Open the Camera App and scanthe code. Expo Go will open automatically.
 
 
 

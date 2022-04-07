@@ -1,4 +1,6 @@
 # Setup
+##For Windown
+##Open Powershell
 
 ### Clone repo
 <code>git clone https://github.com/mageem2/poseTracking.git</code>

@@ -22,7 +22,7 @@
 
 - A web page will pop up. From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download.
 
-<img>[Tunnel IMG] (https://github.com/mageem2/poseTracking/blob/main/images/metro_1.svg)</img>
+![Tunnel IMG] (https://github.com/mageem2/poseTracking/blob/main/images/metro_1.svg)
 
 scan QR code
 

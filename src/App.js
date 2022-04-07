@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { Camera } from 'expo-camera';
 import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button } from 'react-native';
 import PoseTracker from "./PoseTracker";
 
@@ -25,7 +26,7 @@ export default function App() {
   }
 
   const handleClassifiedExercise = (classified_exercise) => {
-    const [exercise, repcount] = classified_pose;
+    const [exercise, repcount] = classified_exercise;
     setClassifiedExercise([exercise, repcount]);
   }
 
@@ -50,16 +51,18 @@ export default function App() {
     setIsLoading(loading);
   }
 
-  console.log(
-    "classifiedExercise: ".classifiedExercise,
-    "classifiedExercises: ".classifiedExercises,
-    "classifiedPoses: ".classifiedPoses,
-    "classifiedPose: ".classifiedPose,
-    "learnedPoses: ".learnedPoses,
-    "learnedExercises: ".learnedExercises,
-    "isLoading: ".isLoading,
-    "isDetecting: ".isDetecting
-  );
+  const testLibrary = () => {
+    console.log(
+      "classifiedExercise: ".classifiedExercise,
+      "classifiedExercises: ".classifiedExercises,
+      "classifiedPoses: ".classifiedPoses,
+      "classifiedPose: ".classifiedPose,
+      "learnedPoses: ".learnedPoses,
+      "learnedExercises: ".learnedExercises,
+      "isLoading: ".isLoading,
+      "isDetecting: ".isDetecting
+    );
+  }
 
   return (
     <View>
@@ -86,6 +89,11 @@ export default function App() {
         classifiedExercises={handleClassifiedExercises}
         learnedPoses={handlePoseList}
         learnedExercises={handleExerciseList}
+      />
+      <Button
+        title="Test Library"
+        color="#f194ff"
+        onPress={() => testLibrary}
       />
     </View>
   );

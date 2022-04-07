@@ -125,7 +125,6 @@ export default class ClassificationUtil {
         //------------------------------------------------------
         //-utilizes pose map from above
         //-maps exercises to an exercise string
-        const exercises = require('./assets/exercises.json');
         this.exercise_map = {};
         for (var exercise in exercises) {
             let encoded_exercise_string = "";

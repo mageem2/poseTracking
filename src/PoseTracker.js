@@ -63,19 +63,30 @@ export default function PoseTracker(
     undefinedExerciseName = 'undefined',
     estimationThreshold = 0.7,
     classificationSmoothingValue = 1,
-    movementWindowResetLimit = 20
-  }
-) {
+    movementWindowResetLimit = 20,
 
-  //Outputs/Callbacks for PoseTracker declaration
-  const { classifiedPose,
+    //Outputs/Callbacks for PoseTracker declaration
+    classifiedPose,
     classifiedPoses,
     classifiedExercise,
     classifiedExercises,
     learnedPoses,
     learnedExercises,
     isDetecting,
-    isLoading } = this.props;
+    isLoading
+  }
+) {
+
+  //Outputs/Callbacks for PoseTracker declaration
+  // const {
+  //   classifiedPose,
+  //   classifiedPoses,
+  //   classifiedExercise,
+  //   classifiedExercises,
+  //   learnedPoses,
+  //   learnedExercises,
+  //   isDetecting,
+  //   isLoading } = this.props;
 
 
   //State variables to be used throughout the PoseTracker Component

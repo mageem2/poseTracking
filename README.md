@@ -22,8 +22,6 @@
 
 - A web page will pop up. From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download. The tunnel option will need to be selected for the app to run.
 
-![Tunnel IMG](./images/tunnel_example.png) 
-
 <img src = "./images/tunnel_example.png" width=256 height=537>
 
 - scan QR code

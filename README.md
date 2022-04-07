@@ -22,7 +22,7 @@
 
 - A web page will pop up. From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download.
 
-![Tunnel IMG](./images/Screenshot (74).png) 
+![Tunnel IMG](./images/tunnel_example.png) 
 
 scan QR code
 

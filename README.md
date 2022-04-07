@@ -18,7 +18,7 @@
 
 - Select either 'Yes' or 'Yes to All', and re-run the app.
 
-### 
+### After the App is running
 
 switch connection from default LAN to tunnel
 

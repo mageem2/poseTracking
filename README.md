@@ -1,5 +1,7 @@
 # Setup
 
+## Before setting up on your computer, you will need to download the Expo Go app on your phone.
+
 ## For Windows:
 
 ### Clone repo
@@ -9,7 +11,7 @@
 ### Navigate to the 'poseTracking' project then run:
 <code>npm install</code>
 
-### Run app
+### Run The Code
 <code>expo start</code>
 
 - If there is an issue with running expo, namely something to do with the digital signature being unreadable, run:
@@ -18,12 +20,12 @@
 
 - Select either 'Yes' or 'Yes to All', and re-run the app.
 
-### After the App is running
+### After Code is Executed
 
-- A web page will pop up. From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download. The tunnel option will need to be selected for the app to run.
+#### A web page will pop up. From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download. The tunnel option will need to be selected for the app to run.
 
 <img src = "./images/tunnel_example.png" width=256 height=537>
 
-- scan QR code
+
 
 

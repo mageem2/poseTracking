@@ -14,9 +14,9 @@
 
 - If there is an issue with running expo, namely something to do with the digital signature being unreadable, run:
 
-- <code>Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted</code>
+  - <code>Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted</code>
 
-#### Select either 'Yes' or 'Yes to All', and re-run the app.
+- Select either 'Yes' or 'Yes to All', and re-run the app.
 
 ### 
 

@@ -27,7 +27,7 @@ const CAM_PREVIEW_WIDTH = Dimensions.get('window').width;
 const CAM_PREVIEW_HEIGHT = CAM_PREVIEW_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // The score threshold for pose detection results.
-const MIN_KEYPOINT_SCORE = 0.7;
+//const MIN_KEYPOINT_SCORE = 0.7;
 
 // The size of the resized output from TensorCamera.
 //
@@ -48,18 +48,36 @@ const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 export default function PoseTracker(
   {
     //Setting Default parameters for components
+
+    //Inputs/Props from PoseTracker declaration
     modelUrl = '',
     showFps = true,
     renderKeypoints = true,
     estimationModelType = 'full',
     cameraState = 'front',
-    // estimationThreshold = 0.5,
     classificationThreshold = 5,
     resetExercises = false,
-    smoothingState = true,
-    autoRender = true
+    estimationSmoothing = true,
+    autoRender = true,
+    undefinedPoseName = 'undefined',
+    undefinedExerciseName = 'undefined',
+    estimationThreshold = 0.7,
+    classificationSmoothingValue = 1,
+    movementWindowResetLimit = 20
   }
 ) {
+
+  //Outputs/Callbacks for PoseTracker declaration
+  const { classifiedPose,
+    classifiedPoses,
+    classifiedExercise,
+    classifiedExercises,
+    learnedPoses,
+    learnedExercises,
+    isDetecting,
+    isLoading } = this.props;
+
+
   //State variables to be used throughout the PoseTracker Component
   // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
   const cameraRef = useRef(null);
@@ -67,16 +85,87 @@ export default function PoseTracker(
   const [detector, setDetector] = useState(null);
   const [poses, setPoses] = useState(null);
   const [estimationFps, setEstimationFps] = useState(0);
-  const [classificationFps, setClassificationFps] = useState(0);
+  // const [classificationFps, setClassificationFps] = useState(0);
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  const [classifiedPoses, setClassifiedPoses] = useState(null);
-  const [classifiedPose, setClassifiedPose] = useState(null);
+  const [classifiedPoses_state, setClassifiedPoses_state] = useState(null);
+  const [classifiedPose_state, setClassifiedPose_state] = useState(null);
   const [classificationUtil, setClassificationUtil] = useState(null);
   const [classificationModel, setClassificationModel] = useState(null);
   const [modelClasses, setModelClasses] = useState(null);
+  const [learnedExercises_state, setLearnedExercises_state] = useState(null);
   const [poseMap, setPoseMap] = useState(null);
   const [exerciseMap, setExerciseMap] = useState(null);
+  const [isLoading_state, setIsLoading_state] = useState(true);
+
+  //Pass default values to callback functions
+  //-This keeps the library from breaking anything
+  // on the outside of the library.
+  //-Example: the classifiedPose 
+  // callback in empty and if the user uses
+  // that callback they will get errors when printing
+  // the returned value to the screen because it is null
+  //------------------------------------------------------
+  classifiedPose([undefinedPoseName, 0.00]);
+  //Returns:
+  // --Array--
+  // [pose_name, confidence value (negative or postive number)]
+  // confidence value: more negative means less confident
+  //  -this is a dynamic value which compares to other pose confidences
+
+  var temp_object = { "classifiedPoses": [undefinedPoseName, 0.00] };
+  classifiedPoses(temp_object);
+  //Returns:
+  // --Object--
+
+  // Example Pose Object Structure
+  // Object {
+  //     "classifiedPoses": Array [
+  //       Object {
+  //         "confidence": 0.008087530732154846,
+  //         "poseName": "t_pose",
+  //       },
+  //       Object {
+  //         "confidence": -0.2243289351463318,
+  //         "poseName": "tree",
+  //       },
+  //       Object {
+  //         "confidence": -1.0932643413543701,
+  //         "poseName": "warrior",
+  //       },
+  //     ],
+  //}
+  // confidence value: more negative means less confident
+  //  -this is a dynamic value which compares to other pose confidences
+
+  classifiedExercise([undefinedExerciseName, 0]);
+  //Returns:
+  // --Array--
+  // [exercise_name, rep count]
+
+  classifiedExercises();
+  //Returns:
+  //--Object--
+
+  //Example Exercise Object Structure
+  //Object {
+  // "pushup": 0,
+  // "tree-to-t":13 
+  // }
+
+  learnedPoses([undefinedPoseName]);
+  //Returns:
+  // --Array--
+  // [pose_name_1, pose_name_2]
+
+  learnedExercises([undefinedExerciseName]);
+  //Returns:
+  // --Array--
+  // [exercise_name_1, exercise_name_2]
+
+  isDetecting(true);
+  isLoading(true);
+  //---------------------END------------------------------
 
 
   useEffect(() => {
@@ -101,7 +190,7 @@ export default function PoseTracker(
         poseDetection.SupportedModels.BlazePose,
         {
           modelType: estimationModelType,
-          enableSmoothing: smoothingState,
+          enableSmoothing: estimationSmoothing,
           runtime: 'tfjs'
         }
       );
@@ -119,16 +208,27 @@ export default function PoseTracker(
       setClassificationUtil(classificationUtil);
 
       //model, label, and the associated hooks can be used to modify app (if needed)
-      const { model, labels, pose_map, exercise_map } = await classificationUtil.loadClassification(modelUrl);
+      const { model, labels, learned_exercises, pose_map, exercise_map } = await classificationUtil.loadClassification(modelUrl);
       if (model) {
-        setClassificationModel(model);
-        setModelClasses(labels);
-        setPoseMap(pose_map);
-        setExerciseMap(exercise_map);
+        setClassificationModel(model);  //sets the model (NN) to be used for pose classification
+        setModelClasses(labels);        //sets learned poses (poses that the NN has been trained on)
+        learnedPoses(modelClasses);     //sets learned poses for callback (output)
+        setPoseMap(pose_map);           //shows mapping for poses to the generated UTF-16 encoded character
+        setExerciseMap(exercise_map);   //shows mapping for exercises to their pose-map based strings
+        setLearnedExercises_state(learned_exercises);//sets learned exercises (exercises from exercise.json in /assets folder)
+        learnedExercises(learnedExercises_state);//sets learned exercises for callback (output)
+        classificationUtil.setResetLimit(movementWindowResetLimit); //sets reset limit for exercise classification
+        classificationUtil.setSmoothingBuffer(classificationSmoothingValue); //sets smoothing buffer for exercise classification
+      } else {
+        console.log("FATAL ERROR: No classification model found \n",
+          "Make sure group1-shard1of1.bin, model.json, exercises.json, classes.json",
+          " are setup correctly in the assets folder of this project...");
       }
 
       // Ready!
       setTfReady(true);
+      setIsLoading_state(false); //sets the PoseTracker state for isLoading_state to false
+      isLoading(false);          //sets the isLoading callback to false (output)
     }
 
     prepare();
@@ -156,18 +256,46 @@ export default function PoseTracker(
         const [poseName, confidence] = await classificationUtil.classifyPose(poses);
         const classified_poses = await classificationUtil.classifyPoses(poses);
         if (poseName && confidence && confidence > classificationThreshold) {
-          setClassifiedPose([poseName, confidence]);
-          setClassifiedPoses(classified_poses);
-          classificationUtil.trackMovement();
-          classificationUtil.classifyExercise();
+          setClassifiedPose_state([poseName, confidence]);
+          setClassifiedPoses_state(classified_poses);
+          classifiedPose(classifiedPose_state); //sets classified pose for callback (output)
+          classifiedPoses(classifiedPoses_state); //sets classified poses for callback (output)
+          if (!resetExercises) {
+            classificationUtil.trackMovement();
+            classificationUtil.classifyExercise();
+            const detected_exercise = classificationUtil.getClassifiedExercise();
+            if (detected_exercise) {
+              classifiedExercise(detected_exercise);
+              classifiedExercises(classificationUtil.getClassifiedExercises());
+            } else {
+              //if there is no current exercise, then 
+              classifiedExercise([undefinedExerciseName, 0]); //return undefined exercise and 0 reps
+            }
+          } else {
+            classificationUtil.resetExercises();
+          }
+        } else { //pose confidence is lower than classificationThreshold
+          if (resetExercises) { classificationUtil.resetExercises(); }
+          trackUndefinedMovement(); //adds frame counts without affecting the movement window
+          const detected_exercise = classificationUtil.getClassifiedExercise();
+          if (detected_exercise) {
+            classifiedExercise(detected_exercise);
+            classifiedExercises(classificationUtil.getClassifiedExercises());
+          } else {
+            //if there is no current exercise, then 
+            classifiedExercise([undefinedExerciseName, 0]); //return undefined exercise and 0 reps
+            isDetecting(true);        //sets isDetecting callback to true because confidence is too low
+          }
+          isDetecting(true);        //sets isDetecting callback to true because confidence is too low
+          setClassifiedPose_state([undefinedPoseName, 0.00]) //sets the classified pose to the undefinedPoseName
+          //given by the user and sets confidence to 0.00
         }
       }
-
 
       tf.dispose([image]);
 
       // Render camera preview manually when autorender=false.
-      if (!AUTO_RENDER) {
+      if (!autoRender) {
         updatePreview();
         gl.endFrameEXP();
       }
@@ -181,7 +309,7 @@ export default function PoseTracker(
   const renderPose = () => {
     if (poses != null && poses.length > 0 && renderKeypoints == true) {
       const keypoints = poses[0].keypoints
-        .filter((k) => (k.score ?? 0) > MIN_KEYPOINT_SCORE)
+        .filter((k) => (k.score ?? 0) > estimationThreshold)
         .map((k) => {
           // Flip horizontally on android.
           const x = IS_ANDROID ? OUTPUT_TENSOR_WIDTH - k.x : k.x;
@@ -252,7 +380,7 @@ export default function PoseTracker(
     if (showFps) {
       return (
         <View style={styles.fpsContainer}>
-          <Text>FPS: {fps}</Text>
+          <Text>FPS: {estimationFps}</Text>
         </View>
       );
     } else {
@@ -309,8 +437,8 @@ export default function PoseTracker(
     }
   };
 
-  //TODO prop
-  if (!tfReady) {
+  //if classification is loading, then return the Loading... (text)
+  if (isLoading_state == true) {
     return (
       <View style={styles.loadingMsg}>
         <Text>Loading...</Text>

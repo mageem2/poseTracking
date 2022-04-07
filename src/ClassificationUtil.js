@@ -8,6 +8,7 @@ export default class ClassificationUtil {
     constructor() {
         this.model = null;
         this.model_classes = null;
+        this.learnedExercises = null;
         this.loadClassification.bind(this);
         this.classifyPose.bind(this);
         this.classifyPoses.bind(this);
@@ -20,18 +21,17 @@ export default class ClassificationUtil {
         this.pose_map = null;
         this.exercise_map = null;
         this.exercise_name_map = null;
-        this.exercise_trie = null;
-        this.movement_window = [];  //arramovement_window
+        this.exercise_trie = null;  //data structure to track exercises being done
+        this.movement_window = [];  //array - movement_window
         this.classified_pose = null;  //string
         this.classified_exercise = null;  //string
         this.classified_exercises = null; //object (JSON)
 
         //TODO Fixes or temporary
-        this.classification_threshold = 0;
-        //setClassificationThreshold - use it in PoseTracker
         this.framecounter = 0;
-        this.resetlimit = 20;
         this.sameposecounter = 0;
+
+        this.resetlimit = 20;
         this.smoothingbuffer = 1;
     }
 
@@ -60,6 +60,15 @@ export default class ClassificationUtil {
 
         console.log(this.model);
         console.log("Known Poses: ", this.model_classes);
+
+        //Create list of learned/known exercises (from exercise.json - in /assets folder)
+        //------------------------------------------------------
+        const exercises = require('./assets/exercises.json');
+        this.learnedExercises = {};
+        for (var exercise in exercises) {
+            this.learnedExercises[exercise] = exercises[exercise];
+        }
+        //---------------------END------------------------------
 
         //Create UTF-16 Encoded Pose Map 
         //------------------------------------------------------
@@ -143,8 +152,6 @@ export default class ClassificationUtil {
         this.exercise_trie = trie;
         //---------------------END------------------------------
 
-        //---------------------END------------------------------
-
         //Create Classified Exercises Variable
         //------------------------------------------------------
         this.classified_exercises = {};
@@ -155,7 +162,15 @@ export default class ClassificationUtil {
         console.log("Classified Exercises: ", this.classified_exercises);
         //---------------------END------------------------------
 
-        return [this.model, this.model_classes, this.pose_map, this.exercise_map]
+        return [this.model, this.model_classes, this.learned_exercises, this.pose_map, this.exercise_map]
+    }
+
+    setResetLimit(reset_limit) {
+        this.resetlimit = reset_limit;
+    }
+
+    setSmoothingBuffer(same_pose_buffer) {
+        this.smoothingbuffer = same_pose_buffer;
     }
 
     // 'classifyPose'
@@ -276,6 +291,25 @@ export default class ClassificationUtil {
         //}
     }
 
+    //'getClassifiedExercise' returns the
+    // classified exercise array [exercise, rep count]
+    async getClassifiedExercise() {
+        return this.classified_exercise;
+
+    }
+
+    //'getClassifiedExercises' returns the
+    // classified exercises JSON object
+    async getClassifiedExercises() {
+        return this.classified_exercises;
+
+        //The JSON object returned by 'getClassifiedExercises'
+        // Object {
+        //     "pushup": 0,
+        //     "tree-to-t":13 
+        //   }
+    }
+
     //Simply returns the encoding a pose
     async getClassifiedEncodedPose(poseName) {
         if (poseName) {
@@ -289,7 +323,7 @@ export default class ClassificationUtil {
 
     //'trackMovement'
     // can be used to define in poseTracker when to
-    // check the current classifiedPose and add it
+    // check the current classifiedPose and adds it
     // to the movement window to be used with
     // exercise classification
     async trackMovement() {
@@ -357,6 +391,29 @@ export default class ClassificationUtil {
         console.log("Movement Window: ", this.movement_window);
     }
 
+    //'trackUndefinedMovement'
+    // can be used to track moments
+    // where the current classified pose
+    // is below the classification threshold
+    // In other words, the confidence
+    // is too low and therefore the 
+    // highest confidence pose should
+    // not be added to the movement
+    // window.  This simmply adds 
+    // a frame to the frame counter.
+    // If an undefined pose is detected for long enough,
+    // then the movement window will be reset base on the
+    // resetlimit given by the user.
+    async trackUndefinedMovement() {
+        this.framecounter++;
+    }
+
+    //resets the classified_exercises variable
+    //used when user passes in true state for reset_exercises
+    resetExercises() {
+        this.classified_exercises = null;
+    }
+
     //'classifyExercise'
     //-processes the movement window.
     //-when an exercise 
@@ -373,7 +430,8 @@ export default class ClassificationUtil {
                 // Save this classified exercise to
                 // the state variable to keep track
                 // of the most recent exercise.
-                this.classified_exercise = classified_exercise_name;
+                const current_reps = this.classified_exercises[classified_exercise_name];
+                this.classified_exercise = [classified_exercise_name, current_reps];
 
                 //Add a rep to classifed exercise
                 //to classified exercise object.
@@ -384,11 +442,8 @@ export default class ClassificationUtil {
             }
         }
         //console.log("Trie search: ",results);
+        console.log("Classified Exercise: ", this.classified_exercise);
         console.log("Classified Exercises: ", this.classified_exercises);
-    }
-
-    resetExercises() {
-        this.classified_exercises = null;
     }
 
     // 'formatArray' takes a 2d array of 33 pose keypoints/landmarks

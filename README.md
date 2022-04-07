@@ -20,11 +20,10 @@
 
 ### After the App is running
 
-- A web page will pop up. From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download.
+- A web page will pop up. From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download. The tunnel option will need to be selected for the app to run.
 
 ![Tunnel IMG](./images/tunnel_example.png) 
 
-scan QR code
+- scan QR code
 
-wait till app loads
 

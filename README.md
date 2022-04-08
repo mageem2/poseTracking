@@ -32,7 +32,7 @@
 <img src = "./images/expo_go_android.jpg" width=500 height = 290>
 
 - For iOS:
-  - Open the Camera App and scanthe code. Expo Go will open automatically.
+  - Open the Camera App and scan the code. Expo Go will open automatically.
 
 
 

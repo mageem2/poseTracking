@@ -1,3 +1,5 @@
 {
-   "pushup" : ["pushup down","pushup up"]
+   "pushup" : ["pushup down","pushup up"],
+   "tree_to_t": ["tree","t_pose"]
+
 }

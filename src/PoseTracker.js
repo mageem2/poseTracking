@@ -5,11 +5,10 @@ import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
 import * as poseDetection from '@tensorflow-models/pose-detection';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { cameraWithTensors } from '@tensorflow/tfjs-react-native';
+import { cameraWithTensors, bundleResourceIO } from '@tensorflow/tfjs-react-native';
 import Svg, { Circle, Line } from 'react-native-svg';
-import FormData from 'form-data';
-import ModelService from './ModelService.js'
-
+import ClassificationUtil from './ClassificationUtil.js';
+import { constructors } from 'react-native-canvas/dist/webview-binders';
 const TensorCamera = cameraWithTensors(Camera);
 
 const IS_ANDROID = Platform.OS === 'android';
@@ -22,7 +21,7 @@ const IS_IOS = Platform.OS === 'ios';
 // devices.
 //
 // This might not cover all cases.
-const CAM_PREVIEW_WIDTH = Dimensions.get('window').width /1.25;
+const CAM_PREVIEW_WIDTH = Dimensions.get('window').width/1.25;
 const CAM_PREVIEW_HEIGHT = CAM_PREVIEW_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // The score threshold for pose detection results.
@@ -37,23 +36,49 @@ const OUTPUT_TENSOR_WIDTH = 180;
 const OUTPUT_TENSOR_HEIGHT = OUTPUT_TENSOR_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // Whether to auto-render TensorCamera preview.
+// AUTO_RENDER == true
+//    - this will make it so that the camera preview
+//      is dynamically rendered.  This is recommended
+//      for almost all applications.
+//    - This means the camera preview will render
+//      regardless of the awaits inside the loop
 const AUTO_RENDER = true;
 
-export default function App() {
+export default function PoseTracker (
+  { 
+    //Setting Default parameters for components
+    modelUrl='', 
+    showFps=true, 
+    renderKeypoints=true,
+    estimationModelType='full',
+    cameraState='front',
+    estimationThreshold='0.5', route
+  } 
+) {
+  const { pose } = route.params;
+  //State variables to be used throughout the PoseTracker Component
+  // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
   const cameraRef = useRef(null);
-  const [currentPoseName, setCurrentPoseName] = useState('');
   const [tfReady, setTfReady] = useState(false);
   const [detector, setDetector] = useState(null);
-  //const [model, setModel] = useState(null);
   const [poses, setPoses] = useState(null);
-  const [fps, setFps] = useState(0);
-  const [orientation, setOrientation] =
-    useState(ScreenOrientation.Orientation);
+  const [estimationFps, setEstimationFps] = useState(0);
+  const [classificationFps, setClassificationFps] = useState(0);
+  const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  const [modelService, setModelService] = useState(null);
+  const [classifiedPoses, setClassifiedPoses] = useState(null);
+  const [classifiedPose, setClassifiedPose] = useState(null);
+  const [classificationUtil, setClassificationUtil] = useState(null);
+  //const [classificationModel, setClassificationModel] = useState(null);
+  const [modelClasses, setModelClasses] = useState(null);
+  const [poseMap, setPoseMap] = useState(null);
+  const [exerciseMap, setExerciseMap] = useState(null);
   const [poseName, setPoseName] = useState(null);
+  const [exerciseName, setExerciseName] = useState(null);
+  const [exerciseList, setExerciseList] = useState(null);
+  const poseType = (JSON.stringify(pose)).replace(/\"/g, "");
 
-
+  
   useEffect(() => {
     async function prepare() {
       // Set initial orientation.
@@ -71,11 +96,6 @@ export default function App() {
       // Wait for tfjs to initialize the backend.
       await tf.ready();
 
-      //load model
-      const modelService = new ModelService();
-      setModelService(modelService)
-      const model = await modelService.create()
-
       // Load Blazepose model.
       const detector = await poseDetection.createDetector(
         poseDetection.SupportedModels.BlazePose,
@@ -86,7 +106,27 @@ export default function App() {
         }
       );
       setDetector(detector);
-      //setModel(model);
+
+      //Load Classification Model and Other Related Assets
+
+      //For information on serving a model from your own server
+      // - Serving from your own server can make it so the app doesn't need to have a full update
+      //   to add exercises and/or poses to the library
+      // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
+
+
+      const classificationUtil = new ClassificationUtil();
+      setClassificationUtil(classificationUtil);
+      
+      //model, label, and the associated hooks can be used to modify app (if needed)
+      const {model, labels, pose_map, exercise_map} = await classificationUtil.loadClassification(modelUrl);
+      if (model) {
+        setClassificationModel(model);
+        setModelClasses(labels);
+        setPoseMap(pose_map);
+        setExerciseMap(exercise_map);
+      }
+
       // Ready!
       setTfReady(true);
     }
@@ -106,16 +146,31 @@ export default function App() {
       const timestamp = performance.now();
       const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
       const latency = performance.now() - timestamp;
-      const numFrames = 300;
-      setFps(Math.floor(1000 / latency));
-      setPoses(poses)
-      
-      if(poses.length>0){
-        //call classify pose to get prediction
-        const poseName = await modelService.classifyPose(poses)
+      setEstimationFps(Math.floor(1000 / latency));
+      setPoses(poses);
+
+      // Pose Classification
+      // TODO:// prop for confidence threshold
+      if(poses.length>0) {
+
+        const [poseName, confidence] = await classificationUtil.classifyPose(poses);
+        
         setPoseName(poseName)
-        //console.log("Prediction response", predictionResponse)
+        const classified_poses = await classificationUtil.classifyPoses(poses);
+        if(poseName && confidence) {
+          console.log(poseName);
+          classificationUtil.trackMovement();
+          classificationUtil.classifyExercise();
+          const [exerciseName, exerciseList] = classificationUtil.getClassifiedExercises()
+          
+          setExerciseName(exerciseName);
+
+          setExerciseList(exerciseList)
+          //console.log(exerciseName["pushup"])
+        }
+
       }
+      
       
       tf.dispose([image]);
 
@@ -131,8 +186,22 @@ export default function App() {
     loop();
   };
 
+  const renderExercise = () =>{
+    if(exerciseName!=null){
+      return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
+    }
+  }
+  
+  const renderPoseName = () => {
+    if(poseType == poseName){
+      return <View><Text style={styles.poseName}>{poseName}</Text></View>
+    }else{
+      return <View><Text style={styles.poseName}>Undefned</Text></View>
+    }
+  }
+
   const renderPose = () => {
-    if (poses != null && poses.length > 0) {
+    if (poses != null && poses.length > 0 && renderKeypoints==true) {
       const keypoints = poses[0].keypoints
         .filter((k) => (k.score ?? 0) > MIN_KEYPOINT_SCORE)
         .map((k) => {
@@ -198,15 +267,6 @@ export default function App() {
       return <View></View>;
     }
   };
- 
-
-  const renderFps = () => {
-    return (
-      <View style={styles.fpsContainer}>
-        <Text>FPS: {fps}</Text>
-      </View>
-    );
-  };
 
   const isPortrait = () => {
     return (
@@ -255,6 +315,7 @@ export default function App() {
     }
   };
 
+  //TODO prop
   if (!tfReady) {
     return (
       <View style={styles.loadingMsg}>
@@ -291,86 +352,87 @@ export default function App() {
           rotation={getTextureRotationAngleInDegrees()}
           onReady={handleCameraStream}
         />
+        {/* TODO prop */}
         <TouchableOpacity
           style={styles.switch}
           onPress={cameraTypeHandler}
         ><Text style={{color:"white"}}>Switch</Text>
         </TouchableOpacity>
         {renderPose()}
-        {renderFps()}
-        <Text style={styles.poseName}>{poseName}</Text>
+        {/* {renderExercise()} */}
+        {renderPoseName()}
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  containerPortrait: {
-    position: 'relative',
-    width: CAM_PREVIEW_WIDTH,
-    height: CAM_PREVIEW_HEIGHT,
-    marginTop: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
-  },
-  containerLandscape: {
-    position: 'relative',
-    width: CAM_PREVIEW_HEIGHT,
-    height: CAM_PREVIEW_WIDTH,
-    marginLeft: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
-  },
-  loadingMsg: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  camera: {
-    width: '100%',
-    height: '100%',
-    zIndex: 1,
-  },
-  svg: {
-    width: '100%',
-    height: '100%',
-    position: 'absolute',
-    zIndex: 30,
-  },
-  fpsContainer: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    width: 80,
-    alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, .7)',
-    borderRadius: 2,
-    padding: 8,
-    zIndex: 20,
-  },
-  switch: {
-    position: 'absolute',
-    bottom: 20,
-    left: 10,
-    width: 80,
-    backgroundColor: '#f194ff',
-    alignItems: 'center',
-    borderRadius: 2,
-    padding: 8,
-    zIndex: 20,
-  },
-  dataStatus: {
-    fontSize: 30,
-  }, 
-  input: {
-    height: 30,
-  },
-  poseName: {
-    position: 'relative',
-    backgroundColor: 'white',
-    alignItems: 'center',
-    color: '#f194ff',
-    zIndex: 20,
-    fontSize: 40,
-    marginTop: 15,
-    marginLeft: 20,
-  }
+    containerPortrait: {
+      position: 'relative',
+      width: CAM_PREVIEW_WIDTH,
+      height: CAM_PREVIEW_HEIGHT,
+      marginTop: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
+    },
+    containerLandscape: {
+      position: 'relative',
+      width: CAM_PREVIEW_HEIGHT,
+      height: CAM_PREVIEW_WIDTH,
+      marginLeft: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
+    },
+    loadingMsg: {
+      position: 'absolute',
+      width: '100%',
+      height: '100%',
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    camera: {
+      width: '100%',
+      height: '100%',
+      zIndex: 1,
+    },
+    svg: {
+      width: '100%',
+      height: '100%',
+      position: 'absolute',
+      zIndex: 30,
+    },
+    fpsContainer: {
+      position: 'absolute',
+      top: 10,
+      left: 10,
+      width: 80,
+      alignItems: 'center',
+      backgroundColor: 'rgba(255, 255, 255, .7)',
+      borderRadius: 2,
+      padding: 8,
+      zIndex: 20,
+    },
+    switch: {
+      position: 'absolute',
+      bottom: 20,
+      left: 10,
+      width: 80,
+      backgroundColor: '#f194ff',
+      alignItems: 'center',
+      borderRadius: 2,
+      padding: 8,
+      zIndex: 20,
+    },
+    dataStatus: {
+      fontSize: 30,
+    }, 
+    input: {
+      height: 30,
+    },
+    poseName: {
+      position: 'relative',
+      backgroundColor: 'white',
+      alignItems: 'center',
+      color: '#f194ff',
+      zIndex: 20,
+      fontSize: 20,
+      marginTop: 15,
+      marginLeft: 20,
+    }
 });

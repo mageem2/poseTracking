@@ -7,6 +7,7 @@
     "start": "react-native start"
   },
   "dependencies": {
+    "@exponent/punycode": "^1.0.0",
     "@mediapipe/pose": "^0.5.1635988162",
     "@react-native-async-storage/async-storage": "^1.15.10",
     "@react-navigation/native": "^6.0.8",
@@ -17,7 +18,7 @@
     "@tensorflow/tfjs-converter": "^3.11.0",
     "@tensorflow/tfjs-react-native": "^0.7.0",
     "async-storage": "^0.1.0",
-    "expo": "^44.0.0",
+    "expo": "^44.0.6",
     "expo-camera": "~12.1.0",
     "expo-file-system": "~13.1.0",
     "expo-gl": "~11.1.1",
@@ -29,6 +30,7 @@
     "expo-status-bar": "~1.2.0",
     "expo-updates": "^0.11.4",
     "fuzzytrie": "^1.0.1",
+    "punycode": "^2.1.1",
     "react": "17.0.1",
     "react-dom": "17.0.1",
     "react-native": "0.64.3",

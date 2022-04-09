@@ -17,29 +17,36 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(null);
 
   const handleClassifiedPose = (classified_pose) => {
+    console.log("classified pose: ",classified_pose);
     const [poseName, confidence] = classified_pose;
     setClassifiedPose([poseName, confidence]);
   }
 
   const handleClassifiedPoses = (classified_poses) => {
+    console.log("classified poses: ",classified_poses);
     setClassifiedPoses(classified_poses);
   }
 
   const handleClassifiedExercise = (classified_exercise) => {
-    const [exercise, repcount] = classified_exercise;
-    setClassifiedExercise([exercise, repcount]);
+    console.log("classified_exercise: ", classified_exercise);
+    // const [exercise, repcount] = classified_exercise;
+    // setClassifiedExercise([exercise, repcount]);
+    setClassifiedExercise(classified_exercise);
   }
 
 
   const handleClassifiedExercises = (classified_exercises) => {
+    console.log("classified_exercises: ",classified_exercises);
     setClassifiedExercises(classified_exercises);
   }
 
   const handlePoseList = (learned_poses) => {
+    console.log("learned poses: ",learned_poses);
     setLearnedPoses(learned_poses);
   }
 
   const handleExerciseList = (learned_exercises) => {
+    console.log("learned exercises: ",learned_exercises);
     setLearnedExercises(learned_exercises);
   }
 
@@ -50,17 +57,16 @@ export default function App() {
   const handleIsLoading = (loading) => {
     setIsLoading(loading);
   }
-
   const testLibrary = () => {
     console.log(
-      "classifiedExercise: ".classifiedExercise,
-      "classifiedExercises: ".classifiedExercises,
-      "classifiedPoses: ".classifiedPoses,
-      "classifiedPose: ".classifiedPose,
-      "learnedPoses: ".learnedPoses,
-      "learnedExercises: ".learnedExercises,
-      "isLoading: ".isLoading,
-      "isDetecting: ".isDetecting
+      "classifiedExercise: ", classifiedExercise,
+      "classifiedExercises: ", classifiedExercises,
+      "classifiedPoses: ", classifiedPoses,
+      "classifiedPose: ", classifiedPose,
+      "learnedPoses: ", learnedPoses,
+      "learnedExercises: ", learnedExercises,
+      "isLoading: ", isLoading,
+      "isDetecting: ", isDetecting
     );
   }
 
@@ -79,6 +85,10 @@ export default function App() {
         resetExercises={false}
         autoRender={true}
         estimationSmoothing={true}
+        undefinedPoseName={"UNDEFINED POSE"}
+        undefinedExerciseName={"UNDEFINED EXERCISE"}
+        classificationSmoothingValue={1}
+        movementWindowResetLimit={20}
 
         // Outputs/Callbacks
         isDetecting={handleIsDetecting}

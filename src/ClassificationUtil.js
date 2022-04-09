@@ -17,6 +17,13 @@ export default class ClassificationUtil {
         this.getClassifiedEncodedPose.bind(this);
         this.classifyExercise.bind(this);
         this.trackMovement.bind(this);
+        this.trackUndefinedMovement.bind(this);
+        this.resetExercises.bind(this);
+        this.getClassifiedExercise.bind(this);
+        this.getClassifiedExercises.bind(this);
+        this.setSmoothingBuffer.bind(this);
+        this.setResetLimit.bind(this);
+
         this.model_url = null;
         this.pose_map = null;
         this.exercise_map = null;
@@ -24,7 +31,7 @@ export default class ClassificationUtil {
         this.exercise_trie = null;  //data structure to track exercises being done
         this.movement_window = [];  //array - movement_window
         this.classified_pose = null;  //string
-        this.classified_exercise = null;  //string
+        this.classified_exercise = null;  //Array of exercise name and reps
         this.classified_exercises = null; //object (JSON)
 
         //TODO Fixes or temporary
@@ -185,7 +192,6 @@ export default class ClassificationUtil {
             const [poseName, confidence] = await this.getClassifiedPose(predictionTensor, this.model_classes);
 
             this.classified_pose = poseName;  //utilized with movement tracking / exercise classification
-
             return [poseName, confidence];
             //Classified Pose Array:
             // ["confidence": -0.2243289351463318, "poseName": "tree"]
@@ -203,28 +209,25 @@ export default class ClassificationUtil {
             const predictionTensor = await this.model.predict(tensor_of_keypoints);
             const classifiedPoses = await this.getClassifiedPoses(predictionTensor, this.model_classes, this.model_classes.length);
 
-            const poseName = classifiedPoses.classifiedPoses[0].poseName;  //gets the highest confidence pose name from poses object
+            const poseName = classifiedPoses[0].poseName;  //gets the highest confidence pose name from poses object
             this.classified_pose = poseName;  //utilized with movement tracking / exercise classification
+            return classifiedPoses;  //Poses Array of Objects - look @ getClassifiedPoses
 
-            return classifiedPoses;  //Poses Object - look @ getClassifiedPoses
-
-            // Example Pose Object Structure
-            // Object {
-            //     "classifiedPoses": Array [
-            //       Object {
-            //         "confidence": 0.008087530732154846,
-            //         "poseName": "t_pose",
-            //       },
-            //       Object {
-            //         "confidence": -0.2243289351463318,
-            //         "poseName": "tree",
-            //       },
-            //       Object {
-            //         "confidence": -1.0932643413543701,
-            //         "poseName": "warrior",
-            //       },
-            //     ],
-            //}
+            // Example Poses Array
+            // Array [
+            //     Object {
+            //     "confidence": 0.008087530732154846,
+            //     "poseName": "t_pose",
+            //     },
+            //     Object {
+            //     "confidence": -0.2243289351463318,
+            //     "poseName": "tree",
+            //     },
+            //     Object {
+            //     "confidence": -1.0932643413543701,
+            //     "poseName": "warrior",
+            //     },
+            // ]
         }
     }
 
@@ -258,7 +261,7 @@ export default class ClassificationUtil {
         const topKValues = await values.data();
         const topKIndices = await indices.data();
 
-        let posesObject = { classifiedPoses: [] }; //This will store an array of pose objects
+        let posesArray = []; //This will store an array of pose objects
         //each with a name & confidence
         for (let i = 0; i < topKIndices.length; i++) {
             let tempPoseObject = { poseName: "", confidence: 0.00 };  //Maybe add encoding here: 
@@ -267,40 +270,37 @@ export default class ClassificationUtil {
             // this.exercise_map[classes[topKIndices[i]]];
             tempPoseObject.poseName = classes[topKIndices[i]];
             tempPoseObject.confidence = topKValues[i];
-            posesObject.classifiedPoses.push(tempPoseObject);
+            posesArray.push(tempPoseObject);
         }
 
-        return posesObject;
-        // Example Pose Object Structure
-        // Object {
-        //     "classifiedPoses": Array [
-        //       Object {
-        //         "confidence": 0.008087530732154846,
-        //         "poseName": "t_pose",
-        //       },
-        //       Object {
-        //         "confidence": -0.2243289351463318,
-        //         "poseName": "tree",
-        //       },
-        //       Object {
-        //         "confidence": -1.0932643413543701,
-        //         "poseName": "warrior",
-        //       },
-        //     ],
-        //}
+        return posesArray;
+        // Example Poses Array
+        // Array [
+        //     Object {
+        //     "confidence": 0.008087530732154846,
+        //     "poseName": "t_pose",
+        //     },
+        //     Object {
+        //     "confidence": -0.2243289351463318,
+        //     "poseName": "tree",
+        //     },
+        //     Object {
+        //     "confidence": -1.0932643413543701,
+        //     "poseName": "warrior",
+        //     },
+        // ]
     }
 
     //'getClassifiedExercise' returns the
     // classified exercise array [exercise, rep count]
     async getClassifiedExercise() {
-        return this.classified_exercise;
-
+        return await this.classified_exercise; //[exercise, rep count]
     }
 
     //'getClassifiedExercises' returns the
     // classified exercises JSON object
     async getClassifiedExercises() {
-        return this.classified_exercises;
+        return await this.classified_exercises;
 
         //The JSON object returned by 'getClassifiedExercises'
         // Object {
@@ -387,7 +387,7 @@ export default class ClassificationUtil {
             }
             this.framecounter++;
         }
-        console.log("Movement Window: ", this.movement_window);
+        // console.log("Movement Window: ", this.movement_window);
     }
 
     //'trackUndefinedMovement'
@@ -425,6 +425,7 @@ export default class ClassificationUtil {
             const distance = results[prefix];
             if (distance == 0) {     //movement window is a known exercise
                 const classified_exercise_name = this.exercise_map[prefix];
+                // console.log("CLASSI EXI NAME:::: ",classified_exercise_name);
 
                 // Save this classified exercise to
                 // the state variable to keep track
@@ -440,9 +441,10 @@ export default class ClassificationUtil {
                 this.movement_window = [];  //empties current movement window
             }
         }
+        // console.log("CLASSI EXI::: ",this.classified_exercise);
         //console.log("Trie search: ",results);
-        console.log("Classified Exercise: ", this.classified_exercise);
-        console.log("Classified Exercises: ", this.classified_exercises);
+        // console.log("Classified Exercise: ", this.classified_exercise);
+        // console.log("Classified Exercises: ", this.classified_exercises);
     }
 
     // 'formatArray' takes a 2d array of 33 pose keypoints/landmarks

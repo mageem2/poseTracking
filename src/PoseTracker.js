@@ -59,8 +59,8 @@ export default function PoseTracker(
     resetExercises = false,
     estimationSmoothing = true,
     autoRender = true,
-    undefinedPoseName = "undefined",
-    undefinedExerciseName = "undefined",
+    undefinedPoseName = "undefined_pose",
+    undefinedExerciseName = "undefined_exercise",
     estimationThreshold = 0.7,
     classificationSmoothingValue = 1,
     movementWindowResetLimit = 20,
@@ -99,16 +99,16 @@ export default function PoseTracker(
   // const [classificationFps, setClassificationFps] = useState(0);
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  const [classifiedPoses_state, setClassifiedPoses_state] = useState(null);
-  const [classifiedPose_state, setClassifiedPose_state] = useState(null);
-  const [classifiedExercise_state, setClassifiedExercise_state] = useState(null);
-  const [classifiedExercises_state, setClassifiedExercises_state] = useState(null);
+  // const [classifiedPoses_state, setClassifiedPoses_state] = useState(null);
+  // const [classifiedPose_state, setClassifiedPose_state] = useState(null);
+  // const [classifiedExercise_state, setClassifiedExercise_state] = useState(null);
+  // const [classifiedExercises_state, setClassifiedExercises_state] = useState(null);
   const [classificationUtil, setClassificationUtil] = useState(null);
-  const [classificationModel, setClassificationModel] = useState(null);
-  const [modelClasses, setModelClasses] = useState(null);
-  const [learnedExercises_state, setLearnedExercises_state] = useState(null);
-  const [poseMap, setPoseMap] = useState(null);
-  const [exerciseMap, setExerciseMap] = useState(null);
+  // const [classificationModel, setClassificationModel] = useState(null);
+  // const [modelClasses, setModelClasses] = useState(null);
+  // const [learnedExercises_state, setLearnedExercises_state] = useState(null);
+  // const [poseMap, setPoseMap] = useState(null);
+  // const [exerciseMap, setExerciseMap] = useState(null);
   const [isLoading_state, setIsLoading_state] = useState(true);
 
   //Pass default values to callback functions
@@ -120,6 +120,7 @@ export default function PoseTracker(
   // the returned value to the screen because it is null
   //------------------------------------------------------
   useEffect(() => {
+    console.log("Defaulting Callbacks....");
     //Returns:
     // --Array--
     // [pose_name, confidence value (negative or postive number)]
@@ -220,18 +221,23 @@ export default function PoseTracker(
       setClassificationUtil(classificationUtil);
 
       //model, label, and the associated hooks can be used to modify app (if needed)
-      const { model, labels, learned_exercises, pose_map, exercise_map } = await classificationUtil.loadClassification(modelUrl);
-      if (model) {
-        setClassificationModel(model);  //sets the model (NN) to be used for pose classification
-        setModelClasses(labels);        //sets learned poses (poses that the NN has been trained on)
-        learnedPoses(modelClasses);     //sets learned poses for callback (output)
-        setPoseMap(pose_map);           //shows mapping for poses to the generated UTF-16 encoded character
-        setExerciseMap(exercise_map);   //shows mapping for exercises to their pose-map based strings
-        setLearnedExercises_state(learned_exercises);//sets learned exercises (exercises from exercise.json in /assets folder)
-        learnedExercises(learnedExercises_state);//sets learned exercises for callback (output)
-        classificationUtil.setResetLimit(movementWindowResetLimit); //sets reset limit for exercise classification
-        classificationUtil.setSmoothingBuffer(classificationSmoothingValue); //sets smoothing buffer for exercise classification
-      }
+      const [labels, learned_exercises] = await classificationUtil.loadClassification(modelUrl);
+      
+      console.log(
+        "\n\n::::Learned poses: ", labels,
+        "\n\n::::Learned exercises: ",learned_exercises
+      );
+
+      // setClassificationModel(model);  //sets the model (NN) to be used for pose classification
+      // setModelClasses(labels);        //sets learned poses (poses that the NN has been trained on)
+      learnedPoses(labels);     //sets learned poses for callback (output)
+      // setPoseMap(pose_map);           //shows mapping for poses to the generated UTF-16 encoded character
+      // setExerciseMap(exercise_map);   //shows mapping for exercises to their pose-map based strings
+      // setLearnedExercises_state(learned_exercises);//sets learned exercises (exercises from exercise.json in /assets folder)
+      learnedExercises(learned_exercises);//sets learned exercises for callback (output)
+      classificationUtil.setResetLimit(movementWindowResetLimit); //sets reset limit for exercise classification
+      classificationUtil.setSmoothingBuffer(classificationSmoothingValue); //sets smoothing buffer for exercise classification
+    
 
       // Ready!
       setTfReady(true);
@@ -259,13 +265,13 @@ export default function PoseTracker(
       setEstimationFps(Math.floor(1000 / latency));
       setPoses(poses);
 
-      // 'Pose Classification and Exercise Classfication'
+      // 'Pose Classification and Exercise Classfication' - render loop
       if (poses.length > 0) {  //if poses have been detected
         const [poseName, confidence] = await classificationUtil.classifyPose(poses);
         const classified_poses = await classificationUtil.classifyPoses(poses);
         if (poseName && confidence && confidence > classificationThreshold) {
-          setClassifiedPose_state([poseName, confidence]);
-          setClassifiedPoses_state(classified_poses);
+          // setClassifiedPose_state([poseName, confidence]);
+          // setClassifiedPoses_state(classified_poses);
           classifiedPose([poseName, confidence]); //sets classified pose for callback (output)
           classifiedPoses(classified_poses); //sets classified poses for callback (output)
           isDetecting(false);        //sets isDetecting callback to false
@@ -287,27 +293,24 @@ export default function PoseTracker(
           if (resetExercises) { classificationUtil.resetExercises(); }
           classificationUtil.trackUndefinedMovement(); //adds frame counts without affecting the movement window
           const detected_exercise = classificationUtil.getClassifiedExercise();
+          const detected_exercises = classificationUtil.getClassifiedExercises();
           if (detected_exercise) {
-            console.log("::::::::::::TEST 4::::::::::::");
             classifiedExercise(detected_exercise);
-            classifiedExercises(classificationUtil.getClassifiedExercises());
+            classifiedExercises(detected_exercises);
           } else {
             //if there is no current exercise, then
-            console.log("::::::::::::TEST 5::::::::::::");
             classifiedExercise([undefinedExerciseName, 0]); //return undefined exercise and 0 reps
-            classifiedExercises({undefinedExerciseName: 0}); //return undefined exercise and 0 reps
-            setClassifiedExercise_state([undefinedExerciseName, 0]);
-            setClassifiedExercises_state({undefinedExerciseName: 0});
+            classifiedExercises(detected_exercises);
+            // setClassifiedExercise_state([undefinedExerciseName, 0]);
+            // setClassifiedExercises_state(detected_exercises);
             isDetecting(true);        //sets isDetecting callback to true because confidence is too low
           }
-          console.log("::::::::::::TEST 6::::::::::::");
           isDetecting(true);        //sets isDetecting callback to true because confidence is too low
-          setClassifiedPose_state([undefinedPoseName, 0.00]) //sets the classified pose to the undefinedPoseName
+          // setClassifiedPose_state([undefinedPoseName, 0.00]) //sets the classified pose to the undefinedPoseName
           //given by the user and sets confidence to 0.00
+          classifiedPose([undefinedPoseName, 0.00]); //sets classified pose for callback (output)
         }
       }
-      // console.log("Exercise: ",classifiedExercise_state);
-      // console.log("Exercises: ",classifiedExercises_state);
 
       tf.dispose([image]);
 
@@ -487,7 +490,7 @@ export default function PoseTracker(
           isPortrait() ? styles.containerPortrait : styles.containerLandscape
         }
       >
-        {renderFps()}
+        <View>{renderFps()}</View>
         <TensorCamera
           ref={cameraRef}
           style={styles.camera}
@@ -532,7 +535,7 @@ const styles = StyleSheet.create({
   camera: {
     width: '100%',
     height: '100%',
-    zIndex: 1,
+    zIndex: 2,
   },
   svg: {
     width: '100%',
@@ -549,6 +552,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, .7)',
     borderRadius: 2,
     padding: 8,
-    zIndex: 20,
+    zIndex: 1,
   },
 });

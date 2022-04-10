@@ -8,7 +8,7 @@ export default class ClassificationUtil {
     constructor() {
         this.model = null;
         this.model_classes = null;
-        this.learnedExercises = null;
+        this.learned_exercises = null;
         this.loadClassification.bind(this);
         this.classifyPose.bind(this);
         this.classifyPoses.bind(this);
@@ -66,15 +66,16 @@ export default class ClassificationUtil {
         }
 
         console.log(this.model);
-        console.log("Known Poses: ", this.model_classes);
+        // console.log("Known Poses: ", this.model_classes);
 
         //Create list of learned/known exercises (from exercise.json - in /assets folder)
         //------------------------------------------------------
         const exercises = require('./assets/exercises.json');
-        this.learnedExercises = {};
+        this.learned_exercises = {};
         for (var exercise in exercises) {
-            this.learnedExercises[exercise] = exercises[exercise];
+            this.learned_exercises[exercise] = exercises[exercise];
         }
+        // console.log("Known Exercises: ",this.learned_exercises);
         //---------------------END------------------------------
 
         //Create UTF-16 Encoded Pose Map 
@@ -124,7 +125,7 @@ export default class ClassificationUtil {
                 i--;
             }
         }
-        console.log("Pose Map: ", this.pose_map);
+        // console.log("Pose Map: ", this.pose_map);
 
         //---------------------END------------------------------
 
@@ -142,7 +143,7 @@ export default class ClassificationUtil {
             }
             this.exercise_map[encoded_exercise_string] = exercise;
         }
-        console.log("Exercise Map: ", this.exercise_map);
+        // console.log("Exercise Map: ", this.exercise_map);
 
         //---------------------END------------------------------
 
@@ -154,7 +155,7 @@ export default class ClassificationUtil {
         for (var exercise in exercises_) {
             trie.add(exercise);
         }
-        console.log("Exercise Trie: ", trie.all());
+        // console.log("Exercise Trie: ", trie.all());
         this.exercise_trie = trie;
         //---------------------END------------------------------
 
@@ -165,10 +166,9 @@ export default class ClassificationUtil {
             var exercise_name = this.exercise_map[exercise];
             this.classified_exercises[exercise_name] = 0;
         }
-        console.log("Classified Exercises: ", this.classified_exercises);
         //---------------------END------------------------------
 
-        return [this.model, this.model_classes, this.learned_exercises, this.pose_map, this.exercise_map]
+        return [this.model_classes, this.learned_exercises];
     }
 
     setResetLimit(reset_limit) {
@@ -293,14 +293,14 @@ export default class ClassificationUtil {
 
     //'getClassifiedExercise' returns the
     // classified exercise array [exercise, rep count]
-    async getClassifiedExercise() {
-        return await this.classified_exercise; //[exercise, rep count]
+    getClassifiedExercise() {
+        return this.classified_exercise; //[exercise, rep count]
     }
 
     //'getClassifiedExercises' returns the
     // classified exercises JSON object
-    async getClassifiedExercises() {
-        return await this.classified_exercises;
+    getClassifiedExercises() {
+        return this.classified_exercises;
 
         //The JSON object returned by 'getClassifiedExercises'
         // Object {
@@ -405,6 +405,13 @@ export default class ClassificationUtil {
     // resetlimit given by the user.
     async trackUndefinedMovement() {
         this.framecounter++;
+        //empties the exercise tracker
+        //if the user has been doing the same
+        //pose for too long (20 frames)
+        if (this.framecounter > this.resetlimit) {
+            this.movement_window = [];
+            this.framecounter = 0; //resets framecount
+        }
     }
 
     //resets the classified_exercises variable
@@ -441,7 +448,6 @@ export default class ClassificationUtil {
                 this.movement_window = [];  //empties current movement window
             }
         }
-        // console.log("CLASSI EXI::: ",this.classified_exercise);
         //console.log("Trie search: ",results);
         // console.log("Classified Exercise: ", this.classified_exercise);
         // console.log("Classified Exercises: ", this.classified_exercises);

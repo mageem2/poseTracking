@@ -438,7 +438,7 @@ export default class ClassificationUtil {
                 // the state variable to keep track
                 // of the most recent exercise.
                 const current_reps = this.classified_exercises[classified_exercise_name];
-                this.classified_exercise = [classified_exercise_name, current_reps];
+                this.classified_exercise = [classified_exercise_name, current_reps + 1];
 
                 //Add a rep to classifed exercise
                 //to classified exercise object.

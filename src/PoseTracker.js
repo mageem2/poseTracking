@@ -303,7 +303,6 @@ export default function PoseTracker(
             classifiedExercises(detected_exercises);
             // setClassifiedExercise_state([undefinedExerciseName, 0]);
             // setClassifiedExercises_state(detected_exercises);
-            isDetecting(true);        //sets isDetecting callback to true because confidence is too low
           }
           isDetecting(true);        //sets isDetecting callback to true because confidence is too low
           // setClassifiedPose_state([undefinedPoseName, 0.00]) //sets the classified pose to the undefinedPoseName
@@ -397,7 +396,7 @@ export default function PoseTracker(
   };
 
   const renderFps = () => {
-    if (showFps) {
+    if (showFps && tfReady) {
       return (
         <View style={styles.fpsContainer}>
           <Text>FPS: {estimationFps}</Text>

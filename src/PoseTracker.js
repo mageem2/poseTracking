@@ -269,6 +269,18 @@ export default function PoseTracker (
     }
   };
 
+  const renderFps = () => {
+    if(showFps){
+        return (
+        <View style={styles.fpsContainer}>
+          <Text>FPS: {estimationFps}</Text>
+        </View>
+      );
+    }else{
+      return (<View></View>)
+    }
+  };
+
   const isPortrait = () => {
     return (
       orientation === ScreenOrientation.Orientation.PORTRAIT_UP ||
@@ -359,6 +371,7 @@ export default function PoseTracker (
           onPress={cameraTypeHandler}
         ><Text style={{color:"white"}}>Switch</Text>
         </TouchableOpacity>
+        {renderFps()}
         {renderPose()}
         {renderExercise()}
         {renderPoseName()}

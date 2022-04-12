@@ -27,7 +27,7 @@ const CAM_PREVIEW_WIDTH = Dimensions.get('window').width/1.25;
 const CAM_PREVIEW_HEIGHT = CAM_PREVIEW_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // The score threshold for pose detection results.
-const MIN_KEYPOINT_SCORE = 0.7;
+const MIN_KEYPOINT_SCORE = 0.93;
 
 // The size of the resized output from TensorCamera.
 //
@@ -152,24 +152,26 @@ export default function PoseTracker (
       // Pose Classification
       // TODO:// prop for confidence threshold
       if(poses.length>0) {
+        if(poses[0].score > MIN_KEYPOINT_SCORE){
+          //console.log(poses[0].score)
 
-        const [poseName, confidence] = await classificationUtil.classifyPose(poses);
-        
-        setPoseName(poseName)
-        const classified_poses = await classificationUtil.classifyPoses(poses);
-        if(poseName && confidence) {
-          //console.log(classified_poses);
-          classificationUtil.trackMovement();
-          classificationUtil.classifyExercise();
-          const [exerciseName, exerciseList] = classificationUtil.getClassifiedExercises()
+          const [poseName, confidence] = await classificationUtil.classifyPose(poses);
           
-          setExerciseName(exerciseName)
-          setExerciseList(exerciseList)
-          //console.log(exerciseName["pushup"])
+          setPoseName(poseName)
+          //const classified_poses = await classificationUtil.classifyPoses(poses);
+          if(poseName && confidence) {
+            //console.log(classified_poses);
+            classificationUtil.trackMovement();
+            classificationUtil.classifyExercise();
+            const [exerciseName, exerciseList] = classificationUtil.getClassifiedExercises()
+            
+            setExerciseName(exerciseName)
+            setExerciseList(exerciseList)
+            //console.log(exerciseName["pushup"])
         }
+      }
 
       }
-      
       
       tf.dispose([image]);
 
@@ -192,7 +194,11 @@ export default function PoseTracker (
   }
   
   const renderPoseName = () => {
-    return <View><Text style={styles.poseName}>{poseName}</Text></View>
+    if(poseName){
+      return <View><Text style={styles.poseName}>{poseName}</Text></View>
+    }else{
+      return <View></View>
+    }
   }
 
   const renderPose = () => {

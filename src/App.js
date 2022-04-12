@@ -13,42 +13,42 @@ function HomeScreen({ navigation }) {
       <Text> </Text>
       <ScrollView style={styles.scrollView}>
       <View style={styles.row}>
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'tree'})} >
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'tree', exercise: null})} >
           <Text style={styles.boxContent}>Tree pose</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 't_pose' })} >
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 't_pose', exercise: null })} >
           <Text style={styles.boxContent}>T pose</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.row}>
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'warrior' })} >
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'warrior', exercise: null })} >
           <Text style={styles.boxContent}>Warrior pose</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'push up' })} >
-          <Text style={styles.boxContent}>Push Ups</Text>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'lotus', exercise: null })} >
+          <Text style={styles.boxContent}>Lotus pose</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.row}>
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'triangle' })} >
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'triangle', exercise: null })} >
           <Text style={styles.boxContent}>Triangle pose</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'garland' })} >
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'garland', exercise: null })} >
           <Text style={styles.boxContent}>Garland Pose</Text>
         </TouchableOpacity>
       </View>
 
       <View style={styles.row}>
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'lotus' })} >
-          <Text style={styles.boxContent}>Lotus pose</Text>
+      <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: null, exercise: 'tree_to_t' })} >
+          <Text style={styles.boxContent}>Tree to T</Text>
         </TouchableOpacity>
         
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'triangle' })} >
-          <Text style={styles.boxContent}>Pose 8 (NOT HERE YET</Text>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: null, exercise: 'pushup' })} >
+          <Text style={styles.boxContent}>Push Ups</Text>
         </TouchableOpacity>
       </View>
 
@@ -96,7 +96,7 @@ export default function App() {
         },
       }}>
         <Stack.Screen name="Home" component={HomeScreen} options={{title: 'Pose Tracker'}}/>
-        <Stack.Screen name="CameraS" getComponent={() => require('./PoseTracker').default} options={{title: 'Camera Tracker', pose: 'jump'}}/>
+        <Stack.Screen name="CameraS" getComponent={() => require('./PoseTracker').default} options={{title: 'Pose',}}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

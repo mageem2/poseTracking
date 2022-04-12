@@ -55,7 +55,7 @@ export default function PoseTracker (
     estimationThreshold='0.5', route
   } 
 ) {
-  const { pose } = route.params;
+  const { pose, exercise } = route.params;
   //State variables to be used throughout the PoseTracker Component
   // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
   const cameraRef = useRef(null);
@@ -77,6 +77,7 @@ export default function PoseTracker (
   const [exerciseName, setExerciseName] = useState(null);
   const [exerciseList, setExerciseList] = useState(null);
   const poseType = (JSON.stringify(pose)).replace(/\"/g, "");
+  const exerciseType = (JSON.stringify(exercise)).replace(/\"/g, "");
 
   
   useEffect(() => {
@@ -164,7 +165,6 @@ export default function PoseTracker (
           const [exerciseName, exerciseList] = classificationUtil.getClassifiedExercises()
           
           setExerciseName(exerciseName);
-
           setExerciseList(exerciseList)
           //console.log(exerciseName["pushup"])
         }
@@ -186,18 +186,27 @@ export default function PoseTracker (
     loop();
   };
 
-  const renderExercise = () =>{
-    if(exerciseName!=null){
-      return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
-    }
-  }
+  // const renderExercise = () =>{
+  //   if(exerciseName!=null){
+  //     return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
+  //   }
+  // }
   
   const renderPoseName = () => {
-    if(poseType == poseName){
-      return <View><Text style={styles.poseName}>{poseName}</Text></View>
+    if(poseType!="null"){
+      if(poseType == poseName){
+        return <View><Text style={styles.poseName}>{poseName}</Text></View>
+      }else{
+        return <View><Text style={styles.poseName}>Undefined</Text></View>
+      }
     }else{
-      return <View><Text style={styles.poseName}>Undefned</Text></View>
+      // console.log(exerciseType)
+      console.log(exerciseName)
+      if(exerciseType == exerciseName){
+        return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
+      }
     }
+    
   }
 
   const renderPose = () => {

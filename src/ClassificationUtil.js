@@ -181,7 +181,7 @@ export default class ClassificationUtil{
             const [poseName, confidence] = await this.getClassifiedPose(predictionTensor,this.model_classes);
             
             this.classified_pose = poseName;  //utilized with movement tracking / exercise classification
-
+            //getConfidence(confidence) //do a normalization so we can set a threshold
             return [poseName, confidence];
         }
     }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Camera } from 'expo-camera';
-import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button } from 'react-native';
+import { StyleSheet, Text, View, ActivityIndicator, Dimensions, Platform, TouchableOpacity, Button } from 'react-native';
 import PoseTracker from "./PoseTracker";
 import { set } from 'react-native-reanimated';
 
@@ -18,7 +18,6 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(null);
 
   const handleClassifiedPose = (classified_pose) => {
-    const [poseName, confidence] =  classified_pose;
     setClassifiedPose(classified_pose);
   }
 
@@ -60,20 +59,33 @@ export default function App() {
   }
 
   useEffect(() => {
-    // console.log(
-    // "\nclassifiedExercise: ", classifiedExercise,
-    // "\nclassifiedExercises: ", classifiedExercises,
-    // "\nclassifiedPoses: ", classifiedPoses,
-    // "\nclassifiedPose: ", classifiedPose,
-    // "\nlearnedPoses: ", learnedPoses,
-    // "\nlearnedExercises: ", learnedExercises,
-    // "\nisLoading: ", isLoading,
-    // "\nisDetecting: ", isDetecting
-    // );
+    console.log(
+      "\nclassifiedExercise: ", classifiedExercise,
+      "\nclassifiedExercises: ", classifiedExercises,
+      "\nclassifiedPoses: ", classifiedPoses,
+      "\nclassifiedPose: ", classifiedPose,
+      "\nlearnedPoses: ", learnedPoses,
+      "\nlearnedExercises: ", learnedExercises,
+      "\nisLoading: ", isLoading,
+      "\nisDetecting: ", isDetecting
+    );
   }, [classifiedExercise, classifiedPose, learnedPoses, learnedExercises, isDetecting, isLoading]);
 
+  const renderLoading = () => {
+    if (isLoading) {
+      return (
+        <View style={styles.loadingMsg}>
+          <ActivityIndicator size="large" />
+        </View>
+      );
+    } else {
+      return <View></View>;
+    }
+  }
+
   return (
-    <View>
+    <View style={styles.container}>
+      {renderLoading()}
       <PoseTracker
 
         // Inputs/Props
@@ -103,8 +115,21 @@ export default function App() {
         learnedExercises={handleExerciseList}
       />
       <Button
-          onPress={cameraTypeHandler}
-          title="Switch" />
+        onPress={cameraTypeHandler}
+        title="Switch" />
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  loadingMsg: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  container: {
+    flex: 1,
+    justifyContent: "center"
+  },
+});

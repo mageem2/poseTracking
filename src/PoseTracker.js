@@ -88,7 +88,6 @@ export default function PoseTracker(
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
   const [classificationUtil, setClassificationUtil] = useState(null);
-  const [isLoading_state, setIsLoading_state] = useState(true);
 
   //Pass default values to callback functions
   //-This keeps the library from breaking anything
@@ -105,7 +104,7 @@ export default function PoseTracker(
     // confidence value: more negative means less confident
     //  -this is a dynamic value which compares to other pose confidences
 
-    var temp_object = [{"poseName":undefinedPoseName, "confidence":0.00}];
+    var temp_object = [{ "poseName": undefinedPoseName, "confidence": 0.00 }];
     classifiedPoses(temp_object);
     //Returns:
     // --Object--
@@ -133,7 +132,7 @@ export default function PoseTracker(
     // --Array--
     // [exercise_name, rep count]
 
-    classifiedExercises({undefinedExerciseName: 0});
+    classifiedExercises({ undefinedExerciseName: 0 });
     //Returns:
     //--Object--
 
@@ -155,7 +154,7 @@ export default function PoseTracker(
 
     isDetecting(true);
     isLoading(true);
-  },[]);  
+  }, []);
   //---------------------END------------------------------
 
 
@@ -199,11 +198,6 @@ export default function PoseTracker(
 
       //model, label, and the associated hooks can be used to modify app (if needed)
       const [labels, learned_exercises] = await classificationUtil_.loadClassification(modelUrl);
-      
-      // console.log(
-      //   "\n\n::::Learned poses: ", labels,
-      //   "\n\n::::Learned exercises: ",learned_exercises
-      // );
 
       learnedPoses(labels);     //sets learned poses for callback (output)
       learnedExercises(learned_exercises);//sets learned exercises for callback (output)
@@ -213,8 +207,6 @@ export default function PoseTracker(
 
       // Ready!
       setTfReady(true);
-      setIsLoading_state(false); //sets the PoseTracker state for isLoading_state to false
-      isLoading(false);          //sets the isLoading callback to false (output)
     }
 
     prepare();
@@ -237,9 +229,17 @@ export default function PoseTracker(
       setEstimationFps(Math.floor(1000 / latency));
       setPoses(poses);
 
+      if (poses) {
+        isLoading(false);//sets the PoseTracker state for isLoading to false
+      }
+
       // 'Pose Classification and Exercise Classfication' - render loop
       if (poses.length > 0) {  //if poses have been detected
-        const [poseName, confidence] = await classificationUtil.classifyPose(poses);
+        try { //TODO
+          var [poseName, confidence] = await classificationUtil.classifyPose(poses);
+        } catch { //TODO
+          var [poseName, confidence] = [undefinedExerciseName, 0];
+        }
         const classified_poses = await classificationUtil.classifyPoses(poses);
         if (poseName && confidence && confidence > classificationThreshold) {
           classifiedPose([poseName, confidence]); //sets classified pose for callback (output)
@@ -422,7 +422,12 @@ export default function PoseTracker(
     }
   };
 
-
+  //if the camera state from the parent component
+  // (the component PoseTracker is in)
+  // changes then this will check what is 
+  // being passed in as a prop for camera
+  // state.  This will change to front or back depending
+  // on the the string given to it.
   useEffect(() => {
     if (cameraState === 'front') {
       setCameraType(Camera.Constants.Type.front);
@@ -431,39 +436,30 @@ export default function PoseTracker(
     }
   }, [cameraState]);
 
-  //if classification is loading, then return the Loading... (text)
-  if (isLoading_state == true) {
-    return (
-      <View style={styles.loadingMsg}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  } else {
-    return (
-      // Note that you don't need to specify `cameraTextureWidth` and
-      // `cameraTextureHeight` prop in `TensorCamera` below.
-      <View
-        style={
-          isPortrait() ? styles.containerPortrait : styles.containerLandscape
-        }
-      >
-        <TensorCamera
-          ref={cameraRef}
-          style={styles.camera}
-          type={cameraType}
-          autorender={autoRender}
-          // tensor related props
-          resizeWidth={getOutputTensorWidth()}
-          resizeHeight={getOutputTensorHeight()}
-          resizeDepth={3}
-          rotation={getTextureRotationAngleInDegrees()}
-          onReady={handleCameraStream}
-        />
-        {renderPose()}
-        {renderFps()}
-      </View>
-    );
-  }
+  return (
+    // Note that you don't need to specify `cameraTextureWidth` and
+    // `cameraTextureHeight` prop in `TensorCamera` below.
+    <View
+      style={
+        isPortrait() ? styles.containerPortrait : styles.containerLandscape
+      }
+    >
+      <TensorCamera
+        ref={cameraRef}
+        style={styles.camera}
+        type={cameraType}
+        autorender={autoRender}
+        // tensor related props
+        resizeWidth={getOutputTensorWidth()}
+        resizeHeight={getOutputTensorHeight()}
+        resizeDepth={3}
+        rotation={getTextureRotationAngleInDegrees()}
+        onReady={handleCameraStream}
+      />
+      {renderPose()}
+      {renderFps()}
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -479,14 +475,6 @@ const styles = StyleSheet.create({
     height: CAM_PREVIEW_WIDTH,
     marginLeft: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
   },
-  loadingMsg: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 2,
-  },
   camera: {
     width: '100%',
     height: '100%',
@@ -496,7 +484,7 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     position: 'absolute',
-    zIndex: 3,
+    zIndex: 40,
   },
   fpsContainer: {
     position: 'absolute',
@@ -507,6 +495,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, .7)',
     borderRadius: 2,
     padding: 8,
-    zIndex: 4,
+    zIndex: 50,
   },
 });

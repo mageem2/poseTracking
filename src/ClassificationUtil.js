@@ -187,7 +187,7 @@ export default class ClassificationUtil {
 
         //If the model exists then do classification
         if (this.model) {
-            const predictionTensor = await this.model.predict(tensor_of_keypoints);
+            const predictionTensor = this.model.predict(tensor_of_keypoints);
             const [poseName, confidence] = await this.getClassifiedPose(predictionTensor, this.model_classes);
 
             this.classified_pose = poseName;  //utilized with movement tracking / exercise classification

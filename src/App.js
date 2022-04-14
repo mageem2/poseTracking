@@ -53,12 +53,12 @@ function HomeScreen({ navigation }) {
       </View>
 
       <View style={styles.row}>
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'triangle' })} >
-          <Text style={styles.boxContent}>Pose 9 (NOT HERE YET)</Text>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'allstatic', exercise: 'null' })} >
+          <Text style={styles.boxContent}>All static</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'triangle' })} >
-          <Text style={styles.boxContent}>Pose 10 (NOT HERE YET)</Text>
+        <TouchableOpacity style ={styles.box} onPress={() => navigation.navigate('CameraS',{ pose: 'null', exercise: 'allexercise' })} >
+          <Text style={styles.boxContent}>All exercise</Text>
         </TouchableOpacity>
       </View>
 

@@ -196,13 +196,21 @@ export default function PoseTracker (
     if(poseType!="null"){
       if(poseType == poseName){
         return <View><Text style={styles.poseName}>{poseName}</Text></View>
-      }else{
+      }
+      else if(poseType == "allstatic"){
+        return <View><Text style={styles.poseName}>{poseName}</Text></View>
+      }
+      else{
         return <View><Text style={styles.poseName}>Undefined</Text></View>
       }
-    }else{
+    }
+    else {
       // console.log(exerciseType)
       console.log(exerciseName)
       if(exerciseType == exerciseName){
+        return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
+      }
+      else if(exerciseType == "allexercise"){
         return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
       }
     }

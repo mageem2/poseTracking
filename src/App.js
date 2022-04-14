@@ -2,11 +2,12 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Camera } from 'expo-camera';
 import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity, Button } from 'react-native';
 import PoseTracker from "./PoseTracker";
+import { set } from 'react-native-reanimated';
 
 
 export default function App() {
 
-  const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
+  const [cameraType, setCameraType] = useState('front');
   const [classifiedPoses, setClassifiedPoses] = useState(null);
   const [classifiedPose, setClassifiedPose] = useState(null);
   const [classifiedExercises, setClassifiedExercises] = useState(null);
@@ -50,8 +51,16 @@ export default function App() {
     setIsLoading(loading);
   }
 
+  const cameraTypeHandler = () => {
+    if (cameraType === 'front') {
+      setCameraType('back');
+    } else {
+      setCameraType('front');
+    }
+  }
+
   useEffect(() => {
-    console.log(
+    // console.log(
     // "\nclassifiedExercise: ", classifiedExercise,
     // "\nclassifiedExercises: ", classifiedExercises,
     // "\nclassifiedPoses: ", classifiedPoses,
@@ -60,7 +69,7 @@ export default function App() {
     // "\nlearnedExercises: ", learnedExercises,
     // "\nisLoading: ", isLoading,
     // "\nisDetecting: ", isDetecting
-    );
+    // );
   }, [classifiedExercise, classifiedPose, learnedPoses, learnedExercises, isDetecting, isLoading]);
 
   return (
@@ -72,7 +81,7 @@ export default function App() {
         showFps={true}
         renderKeypoints={true}
         estimationModelType={"full"}
-        cameraState={'front'}
+        cameraState={cameraType}
         estimationThreshold={0.5}
         classificationThreshold={5}
         resetExercises={false}
@@ -93,6 +102,9 @@ export default function App() {
         learnedPoses={handlePoseList}
         learnedExercises={handleExerciseList}
       />
+      <Button
+          onPress={cameraTypeHandler}
+          title="Switch" />
     </View>
   );
 }

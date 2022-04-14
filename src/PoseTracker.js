@@ -77,18 +77,6 @@ export default function PoseTracker(
   }
 ) {
 
-  //Outputs/Callbacks for PoseTracker declaration
-  // const {
-  //   classifiedPose,
-  //   classifiedPoses,
-  //   classifiedExercise,
-  //   classifiedExercises,
-  //   learnedPoses,
-  //   learnedExercises,
-  //   isDetecting,
-  //   isLoading } = this.props;
-
-
   //State variables to be used throughout the PoseTracker Component
   // More info on state and hooks: https://reactjs.org/docs/hooks-intro.html
   const cameraRef = useRef(null);
@@ -99,16 +87,7 @@ export default function PoseTracker(
   // const [classificationFps, setClassificationFps] = useState(0);
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
-  // const [classifiedPoses_state, setClassifiedPoses_state] = useState(null);
-  // const [classifiedPose_state, setClassifiedPose_state] = useState(null);
-  // const [classifiedExercise_state, setClassifiedExercise_state] = useState(null);
-  // const [classifiedExercises_state, setClassifiedExercises_state] = useState(null);
   const [classificationUtil, setClassificationUtil] = useState(null);
-  // const [classificationModel, setClassificationModel] = useState(null);
-  // const [modelClasses, setModelClasses] = useState(null);
-  // const [learnedExercises_state, setLearnedExercises_state] = useState(null);
-  // const [poseMap, setPoseMap] = useState(null);
-  // const [exerciseMap, setExerciseMap] = useState(null);
   const [isLoading_state, setIsLoading_state] = useState(true);
 
   //Pass default values to callback functions
@@ -120,7 +99,6 @@ export default function PoseTracker(
   // the returned value to the screen because it is null
   //------------------------------------------------------
   useEffect(() => {
-    console.log("Defaulting Callbacks....");
     //Returns:
     // --Array--
     // [pose_name, confidence value (negative or postive number)]
@@ -217,27 +195,21 @@ export default function PoseTracker(
       // GO HERE: https://www.tensorflow.org/tfx/serving/serving_basic
 
 
-      const classificationUtil = new ClassificationUtil();
-      setClassificationUtil(classificationUtil);
+      const classificationUtil_ = new ClassificationUtil();
 
       //model, label, and the associated hooks can be used to modify app (if needed)
-      const [labels, learned_exercises] = await classificationUtil.loadClassification(modelUrl);
+      const [labels, learned_exercises] = await classificationUtil_.loadClassification(modelUrl);
       
-      console.log(
-        "\n\n::::Learned poses: ", labels,
-        "\n\n::::Learned exercises: ",learned_exercises
-      );
+      // console.log(
+      //   "\n\n::::Learned poses: ", labels,
+      //   "\n\n::::Learned exercises: ",learned_exercises
+      // );
 
-      // setClassificationModel(model);  //sets the model (NN) to be used for pose classification
-      // setModelClasses(labels);        //sets learned poses (poses that the NN has been trained on)
       learnedPoses(labels);     //sets learned poses for callback (output)
-      // setPoseMap(pose_map);           //shows mapping for poses to the generated UTF-16 encoded character
-      // setExerciseMap(exercise_map);   //shows mapping for exercises to their pose-map based strings
-      // setLearnedExercises_state(learned_exercises);//sets learned exercises (exercises from exercise.json in /assets folder)
       learnedExercises(learned_exercises);//sets learned exercises for callback (output)
-      classificationUtil.setResetLimit(movementWindowResetLimit); //sets reset limit for exercise classification
-      classificationUtil.setSmoothingBuffer(classificationSmoothingValue); //sets smoothing buffer for exercise classification
-    
+      classificationUtil_.setResetLimit(movementWindowResetLimit); //sets reset limit for exercise classification
+      classificationUtil_.setSmoothingBuffer(classificationSmoothingValue); //sets smoothing buffer for exercise classification
+      setClassificationUtil(classificationUtil_);
 
       // Ready!
       setTfReady(true);
@@ -270,8 +242,6 @@ export default function PoseTracker(
         const [poseName, confidence] = await classificationUtil.classifyPose(poses);
         const classified_poses = await classificationUtil.classifyPoses(poses);
         if (poseName && confidence && confidence > classificationThreshold) {
-          // setClassifiedPose_state([poseName, confidence]);
-          // setClassifiedPoses_state(classified_poses);
           classifiedPose([poseName, confidence]); //sets classified pose for callback (output)
           classifiedPoses(classified_poses); //sets classified poses for callback (output)
           isDetecting(false);        //sets isDetecting callback to false
@@ -287,7 +257,7 @@ export default function PoseTracker(
               classifiedExercise([undefinedExerciseName, 0]); //return undefined exercise and 0 reps
             }
           } else {
-            classificationUtil.resetExercises();
+            classificationUtil.resetExercises(); //resets numbers on current classified exercises
           }
         } else { //pose confidence is lower than classificationThreshold
           if (resetExercises) { classificationUtil.resetExercises(); }
@@ -301,12 +271,8 @@ export default function PoseTracker(
             //if there is no current exercise, then
             classifiedExercise([undefinedExerciseName, 0]); //return undefined exercise and 0 reps
             classifiedExercises(detected_exercises);
-            // setClassifiedExercise_state([undefinedExerciseName, 0]);
-            // setClassifiedExercises_state(detected_exercises);
           }
           isDetecting(true);        //sets isDetecting callback to true because confidence is too low
-          // setClassifiedPose_state([undefinedPoseName, 0.00]) //sets the classified pose to the undefinedPoseName
-          //given by the user and sets confidence to 0.00
           classifiedPose([undefinedPoseName, 0.00]); //sets classified pose for callback (output)
         }
       }
@@ -456,6 +422,15 @@ export default function PoseTracker(
     }
   };
 
+
+  useEffect(() => {
+    if (cameraState === 'front') {
+      setCameraType(Camera.Constants.Type.front);
+    } else {
+      setCameraType(Camera.Constants.Type.back);
+    }
+  }, [cameraState]);
+
   //if classification is loading, then return the Loading... (text)
   if (isLoading_state == true) {
     return (
@@ -464,23 +439,6 @@ export default function PoseTracker(
       </View>
     );
   } else {
-
-    // const cameraTypeHandler = () => {
-    //   if (cameraType === Camera.Constants.Type.back) {
-    //     setCameraType(Camera.Constants.Type.front);
-    //   } else {
-    //     setCameraType(Camera.Constants.Type.back);
-    //   }
-    // };
-
-    const cameraTypeHandler = () => {
-      if (cameraState === 'front') {
-        setCameraType(Camera.Constants.Type.front);
-      } else {
-        setCameraType(Camera.Constants.Type.back);
-      }
-    };
-
     return (
       // Note that you don't need to specify `cameraTextureWidth` and
       // `cameraTextureHeight` prop in `TensorCamera` below.
@@ -489,7 +447,6 @@ export default function PoseTracker(
           isPortrait() ? styles.containerPortrait : styles.containerLandscape
         }
       >
-        <View>{renderFps()}</View>
         <TensorCamera
           ref={cameraRef}
           style={styles.camera}
@@ -502,10 +459,8 @@ export default function PoseTracker(
           rotation={getTextureRotationAngleInDegrees()}
           onReady={handleCameraStream}
         />
-        <Button
-          onPress={cameraTypeHandler}
-          title="Switch" />
         {renderPose()}
+        {renderFps()}
       </View>
     );
   }
@@ -530,17 +485,18 @@ const styles = StyleSheet.create({
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 2,
   },
   camera: {
     width: '100%',
     height: '100%',
-    zIndex: 2,
+    zIndex: 1,
   },
   svg: {
     width: '100%',
     height: '100%',
     position: 'absolute',
-    zIndex: 30,
+    zIndex: 3,
   },
   fpsContainer: {
     position: 'absolute',
@@ -551,6 +507,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255, 255, 255, .7)',
     borderRadius: 2,
     padding: 8,
-    zIndex: 1,
+    zIndex: 4,
   },
 });

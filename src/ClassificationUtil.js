@@ -52,7 +52,7 @@ export default class ClassificationUtil {
         try {
             this.model = await tf.loadLayersModel(model_url);
             this.model_classes = require('./assets/classes.json');
-            console.log("Loaded Tensor Server Model");
+            console.log("Loaded Tensor Server Model:");
         }
         //If server-based doesn't work, then load the statically bundled model
         //from within the source code
@@ -62,11 +62,10 @@ export default class ClassificationUtil {
             const model_classes = require('./assets/classes.json');
             this.model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights));
             this.model_classes = model_classes;
-            console.log("Loaded Static Model");
+            console.log("Loaded Static Model:");
         }
 
         console.log(this.model);
-        // console.log("Known Poses: ", this.model_classes);
 
         //Create list of learned/known exercises (from exercise.json - in /assets folder)
         //------------------------------------------------------
@@ -312,7 +311,7 @@ export default class ClassificationUtil {
     //Simply returns the encoding a pose
     async getClassifiedEncodedPose(poseName) {
         if (poseName) {
-            var encoded_pose = this.pose_map[poseName]
+            let encoded_pose = this.pose_map[poseName]
             if (encoded_pose) { return encoded_pose; }
             else { return ""; }
         } else {
@@ -432,7 +431,6 @@ export default class ClassificationUtil {
             const distance = results[prefix];
             if (distance == 0) {     //movement window is a known exercise
                 const classified_exercise_name = this.exercise_map[prefix];
-                // console.log("CLASSI EXI NAME:::: ",classified_exercise_name);
 
                 // Save this classified exercise to
                 // the state variable to keep track
@@ -449,8 +447,6 @@ export default class ClassificationUtil {
             }
         }
         //console.log("Trie search: ",results);
-        // console.log("Classified Exercise: ", this.classified_exercise);
-        // console.log("Classified Exercises: ", this.classified_exercises);
     }
 
     // 'formatArray' takes a 2d array of 33 pose keypoints/landmarks

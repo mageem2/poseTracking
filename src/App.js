@@ -1,8 +1,6 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { Camera } from 'expo-camera';
-import { StyleSheet, Text, View, ActivityIndicator, Dimensions, Platform, TouchableOpacity, Button } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, ActivityIndicator, Button } from 'react-native';
 import PoseTracker from "./PoseTracker";
-import { set } from 'react-native-reanimated';
 
 
 export default function App() {
@@ -59,22 +57,23 @@ export default function App() {
   }
 
   useEffect(() => {
-    console.log(
-      "\nclassifiedExercise: ", classifiedExercise,
-      "\nclassifiedExercises: ", classifiedExercises,
-      "\nclassifiedPoses: ", classifiedPoses,
-      "\nclassifiedPose: ", classifiedPose,
-      "\nlearnedPoses: ", learnedPoses,
-      "\nlearnedExercises: ", learnedExercises,
-      "\nisLoading: ", isLoading,
-      "\nisDetecting: ", isDetecting
-    );
+    // console.log(
+    //   "\nclassifiedExercise: ", classifiedExercise,
+    //   "\nclassifiedExercises: ", classifiedExercises,
+    //   "\nclassifiedPoses: ", classifiedPoses,
+    //   "\nclassifiedPose: ", classifiedPose,
+    //   "\nlearnedPoses: ", learnedPoses,
+    //   "\nlearnedExercises: ", learnedExercises,
+    //   "\nisLoading: ", isLoading,
+    //   "\nisDetecting: ", isDetecting
+    // );
   }, [classifiedExercise, classifiedPose, learnedPoses, learnedExercises, isDetecting, isLoading]);
 
   const renderLoading = () => {
     if (isLoading) {
+      console.log("F*** React Native");
       return (
-        <View style={styles.loadingMsg}>
+        <View style={styles.loading}>
           <ActivityIndicator size="large" />
         </View>
       );
@@ -122,11 +121,13 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
-  loadingMsg: {
+  loading: {
+    position: 'absolute',
     width: '100%',
     height: '100%',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 100,
   },
   container: {
     flex: 1,

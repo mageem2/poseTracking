@@ -467,13 +467,13 @@ const styles = StyleSheet.create({
     position: 'relative',
     width: CAM_PREVIEW_WIDTH,
     height: CAM_PREVIEW_HEIGHT,
-    marginTop: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
+    marginTop: Dimensions.get('window').height - CAM_PREVIEW_HEIGHT,
   },
   containerLandscape: {
     position: 'relative',
     width: CAM_PREVIEW_HEIGHT,
     height: CAM_PREVIEW_WIDTH,
-    marginLeft: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
+    marginLeft: Dimensions.get('window').height - CAM_PREVIEW_HEIGHT,
   },
   camera: {
     width: '100%',

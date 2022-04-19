@@ -34,7 +34,7 @@ export default class ClassificationUtil {
         this.classified_exercise = null;  //Array of exercise name and reps
         this.classified_exercises = null; //object (JSON)
 
-        //TODO Fixes or temporary
+        //Temporary fixes to edge cases and anomalies
         this.framecounter = 0;
         this.sameposecounter = 0;
 

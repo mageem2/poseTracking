@@ -71,7 +71,7 @@ export default function App() {
 
   const renderLoading = () => {
     if (isLoading) {
-      console.log("F*** React Native");
+      console.log("Apparently Loading");
       return (
         <View style={styles.loading}>
           <ActivityIndicator size="large" />

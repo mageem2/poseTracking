@@ -74,7 +74,12 @@ export default function App() {
       console.log("Apparently Loading");
       return (
         <View style={styles.loading}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator
+            size={200}
+            color="#ffffff"
+            animating={true}
+            style={styles.activityIndicator}
+          />
         </View>
       );
     } else {
@@ -84,38 +89,43 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {renderLoading()}
-      <PoseTracker
+      <View style={styles.tracker}>
+        {renderLoading()}
+        <PoseTracker
 
-        // Inputs/Props
-        modelUrl={''}
-        showFps={true}
-        renderKeypoints={true}
-        estimationModelType={"full"}
-        cameraState={cameraType}
-        estimationThreshold={0.5}
-        classificationThreshold={5}
-        resetExercises={false}
-        autoRender={true}
-        estimationSmoothing={true}
-        undefinedPoseName={"UNDEFINED POSE"}
-        undefinedExerciseName={"UNDEFINED EXERCISE"}
-        classificationSmoothingValue={1}
-        movementWindowResetLimit={20}
+          // Inputs/Props
+          modelUrl={''}
+          showFps={true}
+          renderKeypoints={true}
+          estimationModelType={"full"}
+          cameraState={cameraType}
+          estimationThreshold={0.5}
+          classificationThreshold={5}
+          resetExercises={false}
+          autoRender={true}
+          estimationSmoothing={true}
+          undefinedPoseName={"UNDEFINED POSE"}
+          undefinedExerciseName={"UNDEFINED EXERCISE"}
+          classificationSmoothingValue={1}
+          movementWindowResetLimit={20}
 
-        // Outputs/Callbacks
-        isDetecting={handleIsDetecting}
-        isLoading={handleIsLoading}
-        classifiedPoses={handleClassifiedPoses}
-        classifiedPose={handleClassifiedPose}
-        classifiedExercise={handleClassifiedExercise}
-        classifiedExercises={handleClassifiedExercises}
-        learnedPoses={handlePoseList}
-        learnedExercises={handleExerciseList}
-      />
-      <Button
-        onPress={cameraTypeHandler}
-        title="Switch" />
+          // Outputs/Callbacks
+          isDetecting={handleIsDetecting}
+          isLoading={handleIsLoading}
+          classifiedPoses={handleClassifiedPoses}
+          classifiedPose={handleClassifiedPose}
+          classifiedExercise={handleClassifiedExercise}
+          classifiedExercises={handleClassifiedExercises}
+          learnedPoses={handlePoseList}
+          learnedExercises={handleExerciseList}
+        />
+        <View style={styles.button}>
+          <Button
+            onPress={cameraTypeHandler}
+            title="Switch"
+          />
+        </View>
+      </View>
     </View>
   );
 }
@@ -125,12 +135,27 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '100%',
     height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
+    top: 100,
+    zIndex: 200,
+  },
+  button: {
+    position: 'relative',
+    width: '100%',
+  },
+  tracker: {
+    position: 'absolute',
+    left: 0,
+    top: -120,
     zIndex: 100,
   },
   container: {
     flex: 1,
-    justifyContent: "center"
+    justifyContent: "center",
   },
+  activityIndicator: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: 80
+  }
 });

@@ -7,8 +7,6 @@
     "start": "react-native start"
   },
   "dependencies": {
-    "@exponent/punycode": "^1.0.0",
-    "@mediapipe/pose": "^0.5.1635988162",
     "@react-native-async-storage/async-storage": "^1.15.10",
     "@react-navigation/native": "^6.0.8",
     "@react-navigation/native-stack": "^6.5.0",

@@ -5,6 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Component } from 'react';
 import { inlineStyles } from 'react-native-svg';
 import { PoseTracker } from './PoseTracker';
+import { PoseCompareExample } from './PoseCompareExample';
+import { PoseDetectExample } from './PoseDetectExample';
+import { ExerciseDetectExample } from './ExerciseDetectExample';
 
 function HomeScreen({ navigation }) {
     return (
@@ -13,51 +16,51 @@ function HomeScreen({ navigation }) {
             <Text> </Text>
             <ScrollView style={styles.scrollView}>
                 <View style={styles.row}>
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: 'tree', exercise: null })} >
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('PoseCompare', { target_pose: 'tree', target_exercise: null })} >
                         <Text style={styles.boxContent}>Tree pose</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: 't_pose', exercise: null })} >
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('PoseCompare', { target_pose: 't_pose', target_exercise: null })} >
                         <Text style={styles.boxContent}>T pose</Text>
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.row}>
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: 'warrior', exercise: null })} >
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('PoseCompare', { target_pose: 'warrior', target_exercise: null })} >
                         <Text style={styles.boxContent}>Warrior pose</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: 'lotus', exercise: null })} >
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('PoseCompare', { target_pose: 'lotus', target_exercise: null })} >
                         <Text style={styles.boxContent}>Lotus pose</Text>
                     </TouchableOpacity>
                 </View>
 
                 <View style={styles.row}>
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: 'triangle', exercise: null })} >
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('PoseCompare', { target_pose: 'triangle', target_exercise: null })} >
                         <Text style={styles.boxContent}>Triangle pose</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: 'garland', exercise: null })} >
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('PoseCompare', { target_pose: 'garland', target_exercise: null })} >
                         <Text style={styles.boxContent}>Garland Pose</Text>
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.row}>
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: null, exercise: 'tree_to_t' })} >
+                {/* <View style={styles.row}>
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { target_pose: null, target_exercise: 'tree_to_t' })} >
                         <Text style={styles.boxContent}>Tree to T</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: null, exercise: 'pushup' })} >
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { target_pose: null, target_exercise: 'pushup' })} >
                         <Text style={styles.boxContent}>Push Ups</Text>
                     </TouchableOpacity>
-                </View>
+                </View> */}
 
                 <View style={styles.row}>
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: 'allstatic', exercise: 'null' })} >
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('PoseDetect', { target_pose: 'allstatic', target_exercise: 'null' })} >
                         <Text style={styles.boxContent}>All static</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('CameraS', { pose: 'null', exercise: 'allexercise' })} >
+                    <TouchableOpacity style={styles.box} onPress={() => navigation.navigate('ExerciseDetect', { target_pose: 'null', target_exercise: 'allexercise' })} >
                         <Text style={styles.boxContent}>All exercise</Text>
                     </TouchableOpacity>
                 </View>
@@ -67,17 +70,6 @@ function HomeScreen({ navigation }) {
         </View>
     );
 }
-
-// function CamaraT({ navigation, props }) {
-//   return(
-//     //Camara component opens here
-//       <View style={styles.main}>
-//         {/* <Text>PlaceHolder</Text> */}
-//         <CameraJ/>
-//       </View>
-//   );
-// }
-
 
 const Stack = createNativeStackNavigator();
 
@@ -96,9 +88,9 @@ export default function MainMenu() {
                     },
                 }}>
                 <Stack.Screen name="Home" component={HomeScreen} options={{ title: 'Pose Tracker' }} />
-                <Stack.Screen name="PoseCompare" getComponent={() => require('./PoseTracker').default} options={{ title: 'Pose Comparison', }} />
-                <Stack.Screen name="PoseDetect" getComponent={() => require('./PoseTracker').default} options={{ title: 'Pose Detection', }} />
-                <Stack.Screen name="PoseDetect" getComponent={() => require('./PoseTracker').default} options={{ title: 'Exercise Detection', }} />
+                <Stack.Screen name="PoseCompare" getComponent={() => require('./PoseCompareExample').default} options={{ title: 'Pose Comparison', }} />
+                <Stack.Screen name="PoseDetect" getComponent={() => require('./PoseDetectExample').default} options={{ title: 'Pose Detection', }} />
+                <Stack.Screen name="ExerciseDetect" getComponent={() => require('./ExerciseDetectExample').default} options={{ title: 'Exercise Detection', }} />
             </Stack.Navigator>
         </NavigationContainer>
     );

@@ -57,16 +57,16 @@ export default function App() {
   }
 
   useEffect(() => {
-    // console.log(
-    //   "\nclassifiedExercise: ", classifiedExercise,
-    //   "\nclassifiedExercises: ", classifiedExercises,
-    //   "\nclassifiedPoses: ", classifiedPoses,
-    //   "\nclassifiedPose: ", classifiedPose,
-    //   "\nlearnedPoses: ", learnedPoses,
-    //   "\nlearnedExercises: ", learnedExercises,
-    //   "\nisLoading: ", isLoading,
-    //   "\nisDetecting: ", isDetecting
-    // );
+    console.log(
+      "\nclassifiedExercise: ", classifiedExercise,
+      "\nclassifiedExercises: ", classifiedExercises,
+      "\nclassifiedPoses: ", classifiedPoses,
+      "\nclassifiedPose: ", classifiedPose,
+      "\nlearnedPoses: ", learnedPoses,
+      "\nlearnedExercises: ", learnedExercises,
+      "\nisLoading: ", isLoading,
+      "\nisDetecting: ", isDetecting
+    );
   }, [classifiedExercise, classifiedPose, learnedPoses, learnedExercises, isDetecting, isLoading]);
 
   const renderLoading = () => {

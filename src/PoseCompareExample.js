@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from 'react';
-import { View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View, Button, ActivityIndicator } from 'react-native';
 import PoseTracker from "./PoseTracker";
 
 export default function PoseCompareExample(
@@ -11,13 +11,14 @@ export default function PoseCompareExample(
 
     const [cameraType, setCameraType] = useState('front');
     const [classifiedPoses, setClassifiedPoses] = useState(null);
-    const [classifiedPose, setClassifiedPose] = useState(null);
+    const [classifiedPose, setClassifiedPose] = useState(["",0.00]); //This helps avoid rendering problems where
+                                                                     //the poseName can equal null
     const [classifiedExercises, setClassifiedExercises] = useState(null);
     const [classifiedExercise, setClassifiedExercise] = useState(null);
     const [learnedPoses, setLearnedPoses] = useState(null);
     const [learnedExercises, setLearnedExercises] = useState(null);
-    const [isDetecting, setIsDetecting] = useState(null);
-    const [isLoading, setIsLoading] = useState(null);
+    const [isDetecting, setIsDetecting] = useState(true);
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleClassifiedPose = (classified_pose) => {
         setClassifiedPose(classified_pose);
@@ -61,21 +62,21 @@ export default function PoseCompareExample(
     }
 
     useEffect(() => {
-        // console.log(
+        console.log(
         //   "\nclassifiedExercise: ", classifiedExercise,
         //   "\nclassifiedExercises: ", classifiedExercises,
         //   "\nclassifiedPoses: ", classifiedPoses,
-        //   "\nclassifiedPose: ", classifiedPose,
+          "\nclassifiedPose: ", classifiedPose,
         //   "\nlearnedPoses: ", learnedPoses,
         //   "\nlearnedExercises: ", learnedExercises,
         //   "\nisLoading: ", isLoading,
         //   "\nisDetecting: ", isDetecting
-        // );
+        );
     }, [classifiedExercise, classifiedPose, learnedPoses, learnedExercises, isDetecting, isLoading]);
 
     const renderLoading = () => {
         if (isLoading) {
-            console.log("Apparently Loading");
+            console.log("Loading PoseTracker");
             return (
                 <View style={styles.loading}>
                     <ActivityIndicator
@@ -104,7 +105,9 @@ export default function PoseCompareExample(
             //along with some loading visuals and the target pose name
             return (
                 <View style={styles.purplebox}>
-                    <Text>Loading Pose Classification...</Text>
+                    <View style={styles.row}>
+                        <Text style={{fontSize: 30}}>Loading Pose Classification...</Text>
+                    </View>
                 </View>
             );
         } else {
@@ -113,10 +116,12 @@ export default function PoseCompareExample(
             //if the confidence is lower than a certain number then
             //render the isDetecting screen.  If we use classificationArray
             //to do this, then we could make a bool function (isDetecting)
-            if (isDetecting || classifiedPose[1] < 0.5) {
+            if (isDetecting) {
                 return (
                     <View style={styles.orangebox}>
-                        <Text>Detecting Pose...</Text>
+                        <View style={styles.row}>
+                                <Text style={{fontSize: 30, color: 'white'}}>Detecting Pose...</Text>
+                        </View>
                     </View>
                 );
 
@@ -129,10 +134,12 @@ export default function PoseCompareExample(
             } else {
                 //they are doing the correct pose (green)
                 //we can do string comparison here, if need be
-                if (classifiedPose[0] == props.targetPoseName) {
+                if (classifiedPose[0] == target_pose) {
                     return (
                         <View style={styles.greenbox}>
-                            <Text>Correct Pose Detected!</Text>
+                            <View style={styles.row}>
+                                <Text style={{fontSize: 30, color: 'white'}}>Correct Pose Detected!</Text>
+                            </View>
                         </View>
                     );
 
@@ -140,18 +147,23 @@ export default function PoseCompareExample(
                 } else {
                     return (
                         <View style={styles.redbox}>
-                            <Text>Incorrect Pose Detected</Text>
+                            <View style={styles.row}>
+                                <Text style={{fontSize: 30, color: 'white'}}>Incorrect Pose Detected</Text>
+                            </View>
                         </View>
                     );
                 }
             }
         }
+    }
 
         //PoseExample components
         return (
             <View style={styles.container}>
+                <View style={styles.targetname}>
+                <Text style={{fontSize: 40}}>Target Pose: {target_pose}</Text>
+                </View>
                 <View style={styles.tracker}>
-                    <Text>{target_pose}</Text>
                     {renderLoading()}
                     <PoseTracker
 
@@ -187,21 +199,62 @@ export default function PoseCompareExample(
                             title="Switch"
                         />
                     </View>
-                    {renderStatusBox()}
+                    <View style={styles.column}>
+                        {renderStatusBox()}
+                    </View>
                 </View>
             </View>
         );
-    }
 }
 
 const styles = StyleSheet.create({
+    column : {
+        flex: 1,
+        height: 100,
+        justifyContent: 'space-between',
+        alignContent: 'center',
+    },
+    row: {
+        flex: 1,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignContent: 'center',
+    },  
     orangebox: {
+        flex: 1,
+        flexDirection: 'column',
+        backgroundColor: "#e89631",
+        borderWidth: 2,
+        borderRadius: 9,
+        justifyContent: 'center',
+        alignContent: 'center',
     },
     redbox: {
+        flex: 1,
+        flexDirection: 'column',
+        backgroundColor: "#f74343",
+        borderWidth: 2,
+        borderRadius: 9,
+        justifyContent: 'center',
+        alignContent: 'center',
     },
     purplebox: {
+        flex: 1,
+        flexDirection: 'column',
+        backgroundColor: "#af5dc2",
+        borderWidth: 2,
+        borderRadius: 9,
+        justifyContent: 'center',
+        alignContent: 'center',
     },
     greenbox: {
+        flex: 1,
+        flexDirection: 'column',
+        backgroundColor: "#58a34d",
+        borderWidth: 2,
+        borderRadius: 9,
+        justifyContent: 'center',
+        alignContent: 'center',
     },
     loading: {
         position: 'absolute',
@@ -210,6 +263,12 @@ const styles = StyleSheet.create({
         top: 100,
         zIndex: 200,
     },
+    targetname: {
+        flex: 1,
+        flexDirection: 'row',
+        top: 15,
+        justifyContent: 'center',
+    },
     button: {
         position: 'relative',
         width: '100%',
@@ -217,9 +276,9 @@ const styles = StyleSheet.create({
     tracker: {
         position: 'absolute',
         left: 0,
-        top: -120,
+        top: -200,
         zIndex: 100,
-    },
+      },
     container: {
         flex: 1,
         justifyContent: "center",

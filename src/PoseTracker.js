@@ -98,6 +98,7 @@ export default function PoseTracker(
   // the returned value to the screen because it is null
   //------------------------------------------------------
   useEffect(() => {
+    classifiedPose([undefinedPoseName, 0.00]);
     //Returns:
     // --Array--
     // [pose_name, confidence value (negative or postive number)]
@@ -240,7 +241,12 @@ export default function PoseTracker(
         } catch { //TODO
           var [poseName, confidence] = [undefinedExerciseName, 0];
         }
-        const classified_poses = await classificationUtil.classifyPoses(poses);
+        try{
+          var classified_poses = await classificationUtil.classifyPoses(poses);
+        } catch {
+          var temp_object = [{ "poseName": undefinedPoseName, "confidence": 0.00 }];
+          classifiedPoses(temp_object);
+        }
         if (poseName && confidence && confidence > classificationThreshold) {
           classifiedPose([poseName, confidence]); //sets classified pose for callback (output)
           classifiedPoses(classified_poses); //sets classified poses for callback (output)
@@ -261,9 +267,15 @@ export default function PoseTracker(
           }
         } else { //pose confidence is lower than classificationThreshold
           if (resetExercises) { classificationUtil.resetExercises(); }
-          classificationUtil.trackUndefinedMovement(); //adds frame counts without affecting the movement window
-          const detected_exercise = classificationUtil.getClassifiedExercise();
-          const detected_exercises = classificationUtil.getClassifiedExercises();
+          try{
+            classificationUtil.trackUndefinedMovement(); //adds frame counts without affecting the movement window
+          } catch {} //TODO
+          try{
+            var detected_exercise = classificationUtil.getClassifiedExercise();
+          }catch{} //TODO
+          try{
+            var detected_exercises = classificationUtil.getClassifiedExercises();
+          }catch{} //TODO
           if (detected_exercise) {
             classifiedExercise(detected_exercise);
             classifiedExercises(detected_exercises);

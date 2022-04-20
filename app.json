@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "motioncapture",
-    "slug": "motioncapture",
+    "name": "posetracking",
+    "slug": "posetracking",
     "version": "1.0.0",
     "assetBundlePatterns": [
       "**/*"
     ]
   },
-  "name": "motioncapture"
+  "name": "posetracking"
 }

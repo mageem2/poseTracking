@@ -222,6 +222,13 @@ const styles = StyleSheet.create({
         borderRadius: 9,
         justifyContent: 'center',
         alignContent: 'center',
+    },
+    loading: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: 100,
+        zIndex: 200,
     },  
     targetname: {
         flex: 1,

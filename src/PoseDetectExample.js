@@ -236,12 +236,19 @@ const styles = StyleSheet.create({
         position: 'relative',
         width: '100%',
     },
+    loading: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        top: 100,
+        zIndex: 200,
+    },
     tracker: {
         position: 'absolute',
         left: 0,
         top: -200,
         zIndex: 100,
-      },
+    },
     container: {
         flex: 1,
         justifyContent: "center",

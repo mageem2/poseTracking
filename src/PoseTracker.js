@@ -86,6 +86,7 @@ export default function PoseTracker(
   const [estimationFps, setEstimationFps] = useState(0);
   // const [classificationFps, setClassificationFps] = useState(0);
   const [orientation, setOrientation] = useState(ScreenOrientation.Orientation);
+  //TODO:// Screen orientation optimization
   const [cameraType, setCameraType] = useState(Camera.Constants.Type.front);
   const [classificationUtil, setClassificationUtil] = useState(null);
 
@@ -162,13 +163,13 @@ export default function PoseTracker(
   useEffect(() => {
     async function prepare() {
       // Set initial orientation.
-      const curOrientation = await ScreenOrientation.getOrientationAsync();
-      setOrientation(curOrientation);
+      // const curOrientation = await ScreenOrientation.getOrientationAsync();
+      // setOrientation(curOrientation);
 
-      // Listens to orientation change.
-      ScreenOrientation.addOrientationChangeListener((event) => {
-        setOrientation(event.orientationInfo.orientation);
-      });
+      // // Listens to orientation change.
+      // ScreenOrientation.addOrientationChangeListener((event) => {
+      //   setOrientation(event.orientationInfo.orientation);
+      // });
 
       // Camera permission.
       await Camera.requestCameraPermissionsAsync();
@@ -225,7 +226,9 @@ export default function PoseTracker(
         flipHorizontal: true
       };
       const timestamp = performance.now();
-      const poses = await detector.estimatePoses(image, estimationConfig, timestamp);
+      try{
+        var poses = await detector.estimatePoses(image, estimationConfig, timestamp);
+      }catch{}
       const latency = performance.now() - timestamp;
       setEstimationFps(Math.floor(1000 / latency));
       setPoses(poses);
@@ -235,59 +238,61 @@ export default function PoseTracker(
       }
 
       // 'Pose Classification and Exercise Classfication' - render loop
-      if (poses.length > 0) {  //if poses have been detected
-        try { //TODO
-          var [poseName, confidence] = await classificationUtil.classifyPose(poses);
-        } catch { //TODO
-          var [poseName, confidence] = [undefinedExerciseName, 0];
-        }
-        try{
-          var classified_poses = await classificationUtil.classifyPoses(poses);
-        } catch {
-          var temp_object = [{ "poseName": undefinedPoseName, "confidence": 0.00 }];
-          classifiedPoses(temp_object);
-        }
-        if (poseName && confidence && confidence > classificationThreshold) {
-          classifiedPose([poseName, confidence]); //sets classified pose for callback (output)
-          classifiedPoses(classified_poses); //sets classified poses for callback (output)
-          isDetecting(false);        //sets isDetecting callback to false
-          if (!resetExercises) {
-            classificationUtil.trackMovement();
-            classificationUtil.classifyExercise();
-            const detected_exercise = classificationUtil.getClassifiedExercise();
+      try{
+        if (poses.length > 0) {  //if poses have been detected
+          try { //TODO fix unhandled promise rejection
+            var [poseName, confidence] = await classificationUtil.classifyPose(poses);
+          } catch { //TODO
+            var [poseName, confidence] = [undefinedExerciseName, 0];
+          }
+          try{
+            var classified_poses = await classificationUtil.classifyPoses(poses);
+          } catch {
+            var temp_object = [{ "poseName": undefinedPoseName, "confidence": 0.00 }];
+            classifiedPoses(temp_object);
+          }
+          if (poseName && confidence && confidence > classificationThreshold) {
+            classifiedPose([poseName, confidence]); //sets classified pose for callback (output)
+            classifiedPoses(classified_poses); //sets classified poses for callback (output)
+            isDetecting(false);        //sets isDetecting callback to false
+            if (!resetExercises) {
+              classificationUtil.trackMovement();
+              classificationUtil.classifyExercise();
+              const detected_exercise = classificationUtil.getClassifiedExercise();
+              if (detected_exercise) {
+                classifiedExercise(detected_exercise);
+                classifiedExercises(classificationUtil.getClassifiedExercises());
+              } else {
+                //if there is no current exercise, then 
+                classifiedExercise([undefinedExerciseName, 0]); //return undefined exercise and 0 reps
+              }
+            } else {
+              classificationUtil.resetExercises(); //resets numbers on current classified exercises
+            }
+          } else { //pose confidence is lower than classificationThreshold
+            if (resetExercises) { classificationUtil.resetExercises(); }
+            try{
+              classificationUtil.trackUndefinedMovement(); //adds frame counts without affecting the movement window
+            } catch {} //TODO
+            try{
+              var detected_exercise = classificationUtil.getClassifiedExercise();
+            }catch{} //TODO
+            try{
+              var detected_exercises = classificationUtil.getClassifiedExercises();
+            }catch{} //TODO
             if (detected_exercise) {
               classifiedExercise(detected_exercise);
-              classifiedExercises(classificationUtil.getClassifiedExercises());
+              classifiedExercises(detected_exercises);
             } else {
-              //if there is no current exercise, then 
+              //if there is no current exercise, then
               classifiedExercise([undefinedExerciseName, 0]); //return undefined exercise and 0 reps
+              classifiedExercises(detected_exercises);
             }
-          } else {
-            classificationUtil.resetExercises(); //resets numbers on current classified exercises
+            isDetecting(true);        //sets isDetecting callback to true because confidence is too low
+            classifiedPose([undefinedPoseName, 0.00]); //sets classified pose for callback (output)
           }
-        } else { //pose confidence is lower than classificationThreshold
-          if (resetExercises) { classificationUtil.resetExercises(); }
-          try{
-            classificationUtil.trackUndefinedMovement(); //adds frame counts without affecting the movement window
-          } catch {} //TODO
-          try{
-            var detected_exercise = classificationUtil.getClassifiedExercise();
-          }catch{} //TODO
-          try{
-            var detected_exercises = classificationUtil.getClassifiedExercises();
-          }catch{} //TODO
-          if (detected_exercise) {
-            classifiedExercise(detected_exercise);
-            classifiedExercises(detected_exercises);
-          } else {
-            //if there is no current exercise, then
-            classifiedExercise([undefinedExerciseName, 0]); //return undefined exercise and 0 reps
-            classifiedExercises(detected_exercises);
-          }
-          isDetecting(true);        //sets isDetecting callback to true because confidence is too low
-          classifiedPose([undefinedPoseName, 0.00]); //sets classified pose for callback (output)
         }
-      }
+      } catch{}
 
       tf.dispose([image]);
 
@@ -312,11 +317,11 @@ export default function PoseTracker(
           const x = IS_ANDROID ? OUTPUT_TENSOR_WIDTH - k.x : k.x;
           const y = k.y;
           let cx =
-            (x / getOutputTensorWidth()) *
-            (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
+            (x / getOutputTensorWidth()) * CAM_PREVIEW_WIDTH;
+            // (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
           let cy =
-            (y / getOutputTensorHeight()) *
-            (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
+            (y / getOutputTensorHeight()) * CAM_PREVIEW_HEIGHT;
+            // (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
           if (k.score > estimationThreshold) {
             return (
               <Circle
@@ -342,17 +347,17 @@ export default function PoseTracker(
         const y2 = kp2.y
 
         const cx1 =
-          (x1 / getOutputTensorWidth()) *
-          (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
+          (x1 / getOutputTensorWidth()) * CAM_PREVIEW_WIDTH;
+          // (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
         const cy1 =
-          (y1 / getOutputTensorHeight()) *
-          (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
+          (y1 / getOutputTensorHeight()) * CAM_PREVIEW_HEIGHT;
+          // (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
         const cx2 =
-          (x2 / getOutputTensorWidth()) *
-          (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
+          (x2 / getOutputTensorWidth()) * CAM_PREVIEW_WIDTH;
+          // (isPortrait() ? CAM_PREVIEW_WIDTH : CAM_PREVIEW_HEIGHT);
         const cy2 =
-          (y2 / getOutputTensorHeight()) *
-          (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
+          (y2 / getOutputTensorHeight()) * CAM_PREVIEW_HEIGHT;
+          // (isPortrait() ? CAM_PREVIEW_HEIGHT : CAM_PREVIEW_WIDTH);
         if (kp1.score > estimationThreshold) {
           return (<Line
             key={`skeletonls_${index}`}
@@ -387,12 +392,12 @@ export default function PoseTracker(
     }
   }
 
-  const isPortrait = () => {
-    return (
-      orientation === ScreenOrientation.Orientation.PORTRAIT_UP ||
-      orientation === ScreenOrientation.Orientation.PORTRAIT_DOWN
-    );
-  };
+  // const isPortrait = () => {
+  //   return (
+  //     orientation === ScreenOrientation.Orientation.PORTRAIT_UP ||
+  //     orientation === ScreenOrientation.Orientation.PORTRAIT_DOWN
+  //   );
+  // };
 
   const getOutputTensorWidth = () => {
     // On iOS landscape mode, switch width and height of the output tensor to
@@ -400,39 +405,41 @@ export default function PoseTracker(
     // would be stretched too much.
     //
     // Same for getOutputTensorHeight below.
-    return isPortrait() || IS_ANDROID
+    // return isPortrait() || 
+    return IS_ANDROID
       ? OUTPUT_TENSOR_WIDTH
       : OUTPUT_TENSOR_HEIGHT;
   };
 
   const getOutputTensorHeight = () => {
-    return isPortrait() || IS_ANDROID
+    // return isPortrait() || 
+    return IS_ANDROID
       ? OUTPUT_TENSOR_HEIGHT
       : OUTPUT_TENSOR_WIDTH;
   };
 
-  const getTextureRotationAngleInDegrees = () => {
-    // On Android, the camera texture will rotate behind the scene as the phone
-    // changes orientation, so we don't need to rotate it in TensorCamera.
-    if (IS_ANDROID) {
-      return 0;
-    }
+  // const getTextureRotationAngleInDegrees = () => {
+  //   // On Android, the camera texture will rotate behind the scene as the phone
+  //   // changes orientation, so we don't need to rotate it in TensorCamera.
+  //   if (IS_ANDROID) {
+  //     return 0;
+  //   }
 
-    // For iOS, the camera texture won't rotate automatically. Calculate the
-    // rotation angles here which will be passed to TensorCamera to rotate it
-    // internally.
-    switch (orientation) {
-      // Not supported on iOS as of 11/2021, but add it here just in case.
-      case ScreenOrientation.Orientation.PORTRAIT_DOWN:
-        return 180;
-      case ScreenOrientation.Orientation.LANDSCAPE_LEFT:
-        return 270;
-      case ScreenOrientation.Orientation.LANDSCAPE_RIGHT:
-        return 90;
-      default:
-        return 0;
-    }
-  };
+  //   // For iOS, the camera texture won't rotate automatically. Calculate the
+  //   // rotation angles here which will be passed to TensorCamera to rotate it
+  //   // internally.
+  //   switch (orientation) {
+  //     // Not supported on iOS as of 11/2021, but add it here just in case.
+  //     case ScreenOrientation.Orientation.PORTRAIT_DOWN:
+  //       return 180;
+  //     case ScreenOrientation.Orientation.LANDSCAPE_LEFT:
+  //       return 270;
+  //     case ScreenOrientation.Orientation.LANDSCAPE_RIGHT:
+  //       return 90;
+  //     default:
+  //       return 0;
+  //   }
+  // };
 
   //if the camera state from the parent component
   // (the component PoseTracker is in)
@@ -452,9 +459,10 @@ export default function PoseTracker(
     // Note that you don't need to specify `cameraTextureWidth` and
     // `cameraTextureHeight` prop in `TensorCamera` below.
     <View
-      style={
-        isPortrait() ? styles.containerPortrait : styles.containerLandscape
-      }
+      // style={
+      //   isPortrait() ? styles.containerPortrait : styles.containerLandscape
+      // }
+      style={styles.containerPortrait}
     >
       <TensorCamera
         ref={cameraRef}
@@ -465,7 +473,8 @@ export default function PoseTracker(
         resizeWidth={getOutputTensorWidth()}
         resizeHeight={getOutputTensorHeight()}
         resizeDepth={3}
-        rotation={getTextureRotationAngleInDegrees()}
+        // rotation={getTextureRotationAngleInDegrees()}
+        rotation={0}
         onReady={handleCameraStream}
       />
       {renderPose()}
@@ -483,6 +492,7 @@ const styles = StyleSheet.create({
   },
   containerLandscape: {
     position: 'relative',
+    flexDirection: "row",
     width: CAM_PREVIEW_HEIGHT,
     height: CAM_PREVIEW_WIDTH,
     marginLeft: Dimensions.get('window').height - CAM_PREVIEW_HEIGHT,

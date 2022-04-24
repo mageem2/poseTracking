@@ -1,6 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View, Button, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, Button, ActivityIndicator, Platform } from 'react-native';
 import PoseTracker from "./PoseTracker";
+
+const IS_ANDROID = Platform.OS === 'android';
+const IS_IOS = Platform.OS === 'ios';
+
+const PREVIEW_MARGIN = (IS_IOS ? -250 : -200);
 
 export default function PoseCompareExample(
     {
@@ -246,7 +251,7 @@ const styles = StyleSheet.create({
     tracker: {
         position: 'absolute',
         left: 0,
-        top: -200,
+        top: PREVIEW_MARGIN,
         zIndex: 100,
     },
     container: {

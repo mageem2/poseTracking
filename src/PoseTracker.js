@@ -25,7 +25,7 @@ const CAM_PREVIEW_WIDTH = Dimensions.get('window').width;
 const CAM_PREVIEW_HEIGHT = CAM_PREVIEW_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // The score threshold for pose detection results.
-const MIN_KEYPOINT_SCORE = 0.7;
+const MIN_KEYPOINT_SCORE = 0.93;
 
 // The size of the resized output from TensorCamera.
 //
@@ -153,24 +153,26 @@ export default function PoseTracker (
       // Pose Classification
       // TODO:// prop for confidence threshold
       if(poses.length>0) {
+        if(poses[0].score > MIN_KEYPOINT_SCORE){
+          //console.log(poses[0].score)
 
-        const [poseName, confidence] = await classificationUtil.classifyPose(poses);
-        
-        setPoseName(poseName)
-        const classified_poses = await classificationUtil.classifyPoses(poses);
-        if(poseName && confidence) {
-          console.log(poseName);
-          classificationUtil.trackMovement();
-          classificationUtil.classifyExercise();
-          const [exerciseName, exerciseList] = classificationUtil.getClassifiedExercises()
+          const [poseName, confidence] = await classificationUtil.classifyPose(poses);
           
-          setExerciseName(exerciseName);
-          setExerciseList(exerciseList)
-          //console.log(exerciseName["pushup"])
+          setPoseName(poseName)
+          //const classified_poses = await classificationUtil.classifyPoses(poses);
+          if(poseName && confidence) {
+            //console.log(classified_poses);
+            classificationUtil.trackMovement();
+            classificationUtil.classifyExercise();
+            const [exerciseName, exerciseList] = classificationUtil.getClassifiedExercises()
+            
+            setExerciseName(exerciseName)
+            setExerciseList(exerciseList)
+            //console.log(exerciseName["pushup"])
         }
+      }
 
       }
-      
       
       tf.dispose([image]);
 
@@ -196,13 +198,21 @@ export default function PoseTracker (
     if(poseType!="null"){
       if(poseType == poseName){
         return <View><Text style={styles.poseName}>{poseName}</Text></View>
-      }else{
-        return <View><Text style={styles.poseNameWrong}>Wrong Pose</Text></View>
       }
-    }else{
+      else if(poseType == "allstatic"){
+        return <View><Text style={styles.poseName}>{poseName}</Text></View>
+      }
+      else{
+        return <View><Text style={styles.poseNameWrong}>Undefined</Text></View>
+      }
+    }
+    else {
       // console.log(exerciseType)
       console.log(exerciseName)
       if(exerciseType == exerciseName){
+        return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
+      }
+      else if(exerciseType == "allexercise"){
         return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
       }
     }
@@ -274,6 +284,18 @@ export default function PoseTracker (
       return <Svg style={styles.svg}>{skeleton}{keypoints}</Svg>;
     } else {
       return <View></View>;
+    }
+  };
+
+  const renderFps = () => {
+    if(showFps){
+        return (
+        <View style={styles.fpsContainer}>
+          <Text>FPS: {estimationFps}</Text>
+        </View>
+      );
+    }else{
+      return (<View></View>)
     }
   };
 
@@ -369,6 +391,7 @@ export default function PoseTracker (
         >
           <Text style={{color:"white"}}>Switch</Text>
         </TouchableOpacity>
+        {/* {renderFps()} */}
         {renderPose()}
       </View>
       <View>
@@ -385,7 +408,8 @@ const styles = StyleSheet.create({
       position: 'relative',
       width: CAM_PREVIEW_WIDTH,
       height: CAM_PREVIEW_HEIGHT,
-      marginTop: '25%',
+      //marginTop: Dimensions.get('window').height - CAM_PREVIEW_HEIGHT,
+      marginTop:0,
     },
     containerLandscape: {
       position: 'relative',

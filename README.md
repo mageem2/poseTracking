@@ -1,21 +1,39 @@
 # Setup
 
+#### Note: Before setting up on your computer, you will need to download the Expo Go app on your phone.
+
+## For Windows:
+
 ### Clone repo
 <code>git clone https://github.com/mageem2/poseTracking.git</code>
 
   
-### Navigate to the motioncapture project then run:
-<code>npm install --legacy-peer-deps</code>
-<code>npm install --global expo-cli</code>
-<code>npm install fuzzytrie</code>
-<code>npm install -g @expo/ngrok@4.1.0</code>
+### Navigate to the 'poseTracking' project then run:
+<code>npm install</code>
 
-### Run app
+### Run The Code
 <code>expo start</code>
 
-switch connection from default LAN to tunnel
+- If there is an issue with running expo, namely something to do with the digital signature being unreadable, run:
 
-scan QR code
+  - <code>Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted</code>
 
-wait till app loads
+- Select either 'Yes' or 'Yes to All', and re-run the app.
+
+#### After the expo start command is ran, web page will open up. If a web page doesn't open up, press 'd' in the terminal running Expo
+#### From there, select the tunnel option. If this is your first time running the app, 'ngrok' will download. The tunnel option will need to be selected every time the app is ran.
+
+<img src = "./images/tunnel_example.png" width=256 height=537>
+
+#### Scan the QR code (A unique code will be generated every time the app is ran)
+
+- For Android:
+  - Open the Expo Go App and select "Scan QR Code".
+<img src = "./images/expo_go_android.jpg" width=500 height = 290>
+
+- For iOS:
+  - Open the Camera App and scan the code. Expo Go will open automatically.
+
+
+
 

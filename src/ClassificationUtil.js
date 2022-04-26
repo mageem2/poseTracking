@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import * as tf from '@tensorflow/tfjs';
 import { fetch ,asyncStorageIO, bundleResourceIO, decodeJpeg} from '@tensorflow/tfjs-react-native';
 import { and } from 'react-native-reanimated';
-import { encode } from 'punycode';
 export default class ClassificationUtil{
 
     //Sets up stats hooks for the classificatiion util class

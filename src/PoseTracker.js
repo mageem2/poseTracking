@@ -21,7 +21,7 @@ const IS_IOS = Platform.OS === 'ios';
 // devices.
 //
 // This might not cover all cases.
-const CAM_PREVIEW_WIDTH = Dimensions.get('window').width/1.25;
+const CAM_PREVIEW_WIDTH = Dimensions.get('window').width;
 const CAM_PREVIEW_HEIGHT = CAM_PREVIEW_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // The score threshold for pose detection results.
@@ -197,7 +197,7 @@ export default function PoseTracker (
       if(poseType == poseName){
         return <View><Text style={styles.poseName}>{poseName}</Text></View>
       }else{
-        return <View><Text style={styles.poseName}>Undefined</Text></View>
+        return <View><Text style={styles.poseNameWrong}>Wrong Pose</Text></View>
       }
     }else{
       // console.log(exerciseType)
@@ -344,6 +344,7 @@ export default function PoseTracker (
     return (
       // Note that you don't need to specify `cameraTextureWidth` and
       // `cameraTextureHeight` prop in `TensorCamera` below.
+      <View>
       <View
         style={
           isPortrait() ? styles.containerPortrait : styles.containerLandscape
@@ -365,11 +366,15 @@ export default function PoseTracker (
         <TouchableOpacity
           style={styles.switch}
           onPress={cameraTypeHandler}
-        ><Text style={{color:"white"}}>Switch</Text>
+        >
+          <Text style={{color:"white"}}>Switch</Text>
         </TouchableOpacity>
         {renderPose()}
-        {/* {renderExercise()} */}
+      </View>
+      <View>
         {renderPoseName()}
+      </View>
+
       </View>
     );
   }
@@ -380,13 +385,13 @@ const styles = StyleSheet.create({
       position: 'relative',
       width: CAM_PREVIEW_WIDTH,
       height: CAM_PREVIEW_HEIGHT,
-      marginTop: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
+      marginTop: '25%',
     },
     containerLandscape: {
       position: 'relative',
       width: CAM_PREVIEW_HEIGHT,
       height: CAM_PREVIEW_WIDTH,
-      marginLeft: Dimensions.get('window').height / 2 - CAM_PREVIEW_HEIGHT / 2,
+      marginLeft: "20%"
     },
     loadingMsg: {
       position: 'absolute',
@@ -435,13 +440,26 @@ const styles = StyleSheet.create({
       height: 30,
     },
     poseName: {
-      position: 'relative',
-      backgroundColor: 'white',
-      alignItems: 'center',
-      color: '#f194ff',
+      position: 'absolute',
+      backgroundColor: 'lightgreen',
+      borderRadius: 10,
+      width: '100%',
+      height: 50,
+      textAlign: 'center',
+      color: 'black',
       zIndex: 20,
-      fontSize: 20,
-      marginTop: 15,
-      marginLeft: 20,
+      fontSize: 30,
+
+    },
+    poseNameWrong: {
+      position: 'absolute',
+      backgroundColor: '#B22222',
+      borderRadius: 10,
+      width: '100%',
+      height: 50,
+      textAlign: 'center',
+      color: 'white',
+      zIndex: 20,
+      fontSize: 30,
     }
 });

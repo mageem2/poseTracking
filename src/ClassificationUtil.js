@@ -449,6 +449,9 @@ export default class ClassificationUtil {
         //console.log("Trie search: ",results);
     }
 
+    getClassifiedExercises(){
+        return [this.classified_exercise,this.classified_exercises];
+    }
     // 'formatArray' takes a 2d array of 33 pose keypoints/landmarks
     // and converts it to 99 separate points of data by separating
     // the x, y, and z points of data.  (33*3=99)

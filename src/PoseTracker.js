@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { StyleSheet, Text, View, Dimensions, Platform, Button } from 'react-native';
+import { StyleSheet, Text, View, Dimensions, Platform, TouchableOpacity } from 'react-native';
 
 import { Camera } from 'expo-camera';
 import * as tf from '@tensorflow/tfjs';
@@ -28,6 +28,7 @@ const CAM_PREVIEW_HEIGHT = CAM_PREVIEW_WIDTH / (IS_IOS ? 9 / 16 : 3 / 4);
 
 // The score threshold for pose detection results.
 //const MIN_KEYPOINT_SCORE = 0.7;
+const MIN_KEYPOINT_SCORE = 0.93;
 
 // The size of the resized output from TensorCamera.
 //
@@ -299,6 +300,20 @@ export default function PoseTracker(
 
     loop();
   };
+
+  const renderExercise = () =>{
+    if(exerciseName!=null){
+      return <View><Text style={styles.poseName}>{exerciseName}: {exerciseList[exerciseName]}</Text></View>
+    }
+  }
+  
+  const renderPoseName = () => {
+    if(poseName){
+      return <View><Text style={styles.poseName}>{poseName}</Text></View>
+    }else{
+      return <View></View>
+    }
+  }
 
   const renderPose = () => {
     if (poses != null && poses.length > 0 && renderKeypoints == true) {

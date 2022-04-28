@@ -1,1 +1,1 @@
-["triangle", "pushup up", "t_pose", "pushup down", "garland", "lotus", "warrior", "tree"]
+["Triangle", "Pushup up", "T-Pose", "Pushup down", "Garland", "Lotus", "Warrior", "Tree"]

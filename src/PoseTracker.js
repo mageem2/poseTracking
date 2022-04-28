@@ -162,14 +162,6 @@ export default function PoseTracker(
 
   useEffect(() => {
     async function prepare() {
-      // Set initial orientation.
-      // const curOrientation = await ScreenOrientation.getOrientationAsync();
-      // setOrientation(curOrientation);
-
-      // // Listens to orientation change.
-      // ScreenOrientation.addOrientationChangeListener((event) => {
-      //   setOrientation(event.orientationInfo.orientation);
-      // });
 
       // Camera permission.
       await Camera.requestCameraPermissionsAsync();
@@ -230,7 +222,7 @@ export default function PoseTracker(
         var poses = await detector.estimatePoses(image, estimationConfig, timestamp);
       }catch{}
       const latency = performance.now() - timestamp;
-      setEstimationFps(Math.floor(1000 / latency));
+      setEstimationFps(Math.floor(1000 / latency)); //sets value from pos estimation frames per second
       setPoses(poses);
 
       if (poses) {
@@ -392,13 +384,6 @@ export default function PoseTracker(
     }
   }
 
-  // const isPortrait = () => {
-  //   return (
-  //     orientation === ScreenOrientation.Orientation.PORTRAIT_UP ||
-  //     orientation === ScreenOrientation.Orientation.PORTRAIT_DOWN
-  //   );
-  // };
-
   const getOutputTensorWidth = () => {
     // On iOS landscape mode, switch width and height of the output tensor to
     // get better result. Without this, the image stored in the output tensor
@@ -417,29 +402,6 @@ export default function PoseTracker(
       ? OUTPUT_TENSOR_HEIGHT
       : OUTPUT_TENSOR_WIDTH;
   };
-
-  // const getTextureRotationAngleInDegrees = () => {
-  //   // On Android, the camera texture will rotate behind the scene as the phone
-  //   // changes orientation, so we don't need to rotate it in TensorCamera.
-  //   if (IS_ANDROID) {
-  //     return 0;
-  //   }
-
-  //   // For iOS, the camera texture won't rotate automatically. Calculate the
-  //   // rotation angles here which will be passed to TensorCamera to rotate it
-  //   // internally.
-  //   switch (orientation) {
-  //     // Not supported on iOS as of 11/2021, but add it here just in case.
-  //     case ScreenOrientation.Orientation.PORTRAIT_DOWN:
-  //       return 180;
-  //     case ScreenOrientation.Orientation.LANDSCAPE_LEFT:
-  //       return 270;
-  //     case ScreenOrientation.Orientation.LANDSCAPE_RIGHT:
-  //       return 90;
-  //     default:
-  //       return 0;
-  //   }
-  // };
 
   //if the camera state from the parent component
   // (the component PoseTracker is in)

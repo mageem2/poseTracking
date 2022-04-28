@@ -52,7 +52,7 @@ export default class ClassificationUtil {
         try {
             this.model = await tf.loadLayersModel(model_url);
             this.model_classes = require('./assets/classes.json');
-            console.log("Loaded Tensor Server Model:");
+            // console.log("Loaded Tensor Server Model:");
         }
         //If server-based doesn't work, then load the statically bundled model
         //from within the source code
@@ -62,10 +62,10 @@ export default class ClassificationUtil {
             const model_classes = require('./assets/classes.json');
             this.model = await tf.loadLayersModel(bundleResourceIO(modelJSON, modelWeights));
             this.model_classes = model_classes;
-            console.log("Loaded Static Model:");
+            // console.log("Loaded Static Model:");
         }
 
-        console.log(this.model);
+        // console.log(this.model);
 
         //Create list of learned/known exercises (from exercise.json - in /assets folder)
         //------------------------------------------------------

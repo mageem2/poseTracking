@@ -138,7 +138,7 @@ npm install posetracker
 - *Live exercise classification and rep counting*. Returns this data to [callbacks](https://reactjs.org/docs/faq-functions.html)/outputs which can be used in an app. (listed in documentation).
 - Additional options (model server, internal state, classification tuning, and model configuration).
 
-❗***Check docs or [Example App](https://github.com/mageem2/poseTracking/edit/main/README.md#demo-app) for detailed component use.***
+❗***Check docs or [Example App](https://github.com/mageem2/poseTracking#demo-app) for detailed component use.***
 
 #### 1. Import *PoseTracker*
 
@@ -268,7 +268,7 @@ export default function App() {
 }
 ```
 
-***For more *PoseTracker* use look at the docs or the [Example App]() in this repo.***.
+***For more *PoseTracker* use look at the docs or the [Example App](https://github.com/mageem2/poseTracking#demo-app) in this repo.***.
 
 ### 📘*PoseTrainer* use
 
@@ -334,7 +334,7 @@ export default function App() {
 
 #### 🧰***PoseTracker*** examples and options:
 
-*Check user guide or [Example App](https://github.com/mageem2/poseTracking/edit/main/README.md#demo-app) for more detailed use and descriptions.*
+*Check user guide or [Example App](https://github.com/mageem2/poseTracking#demo-app) for more detailed use and descriptions.*
 ***➡ Inputs (props):***
 - modelURL
     - URL serving tensor model for classification
@@ -418,7 +418,7 @@ ___
             //     ],
        //}
         ```
-    - Look at the [Demo App](https://github.com/mageem2/poseTracking/edit/main/README.md#demo-app) for more examples on how to use this.
+    - Look at the [Demo App](https://github.com/mageem2/poseTracking#demo-app) for more examples on how to use this.
 
 - classifiedExercise
     - Return the current classified exercise, its confidence value, and its rep count.
